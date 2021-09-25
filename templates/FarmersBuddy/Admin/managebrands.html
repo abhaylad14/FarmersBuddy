@@ -1,0 +1,198 @@
+{% extends './base.html' %} {% block title %}Dashboard{% endblock %} {% block body %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Manage Brands</h1>
+        </div>
+        <!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Manage Brands</li>
+          </ol>
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+    <hr />
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid"></div>
+    <!-- /.container-fluid -->
+    <div class="card">
+      <div class="card-body col-md-6 mx-auto">
+      <form method="post"> {% csrf_token %}
+      <div class="row">
+        <div class="col-md-8 float-right">
+        <label for="txtbrand" class="form-label">Brand Name</label>
+        <input type="text" class="form-control" id="txtbrand" name="txtbrand" placeholder="Enter brand here">
+        </div>
+        <div class="col-md-4 mx-auto">
+        <br/>
+        <button type="submit" id="btnadd" name="btnadd" class="btn btn-primary mt-2" >Add Brand</button>
+        </div>
+        </div>
+      </form>
+      </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+          <table id="myTable" class="table table-hover table-responsive-md">
+            <thead class="table-secondary">
+              <th scope="col">#</th>
+              <th scope="col">Brand Name</th>
+              <th scope="col">Status</th>
+              <th scope="col">Action</th>
+            </thead>
+            <tbody>
+            {% for item in Brands %}
+            <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ item.BrandName }}</td>
+            {% if item.Status == "1"  %}
+            <td><button id="{{ item.id }}" class='btn btn-xs btn-success btn-status'>Active</button></td>
+            {% elif item.Status == "2" %}
+            <td><button id="{{ item.id }}" class='btn btn-xs btn-warning btn-status'>Unverified</button></td>
+            {% else %}
+            <td><button id="{{ item.id }}" class='btn btn-xs btn-danger btn-status'>Inactive</button></td>
+            {% endif %}
+            <td>
+              <button id="{{ item.id }}" class="btn btn-outline-danger btn-sm fas fa-trash-alt border-0 btn-delete"></button>
+            </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  </div>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<!--Delete Modal -->
+<div class="modal fade" id="deletemodal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Alert</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure want to delete this Brand?</p>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="ajaxdelete" data-dismiss="modal">Delete</button>
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+      <!-- /.modal -->
+<script>
+var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+  $(document).ready( function () {
+      $('#myTable').DataTable();
+  } );
+  $(".btn-status").click(function () {
+              let id = this.id;
+              console.log(id);
+              let element = this;
+              let status = this.innerText;
+              let sid = "";
+              let newstatus = "";
+              if (status == "Active") {
+                  newstatus = "Inactive";
+                  sid = 1;
+              } else if (status == "Inactive") {
+                  newstatus = "Active";
+                  sid = 0;
+              }
+              if(status == "Unverified"){
+
+              }
+              else{
+                $.ajax({
+                  type: "POST",
+                  url: "{% url 'changebrandstatus' %}",
+                  headers:{
+                    'X-CSRFToken': csrftoken
+                  },
+                  data: {
+                      id: id,
+                      ustatus: sid
+                  },
+                  success: function (result) {
+                      if (result == "done") {
+                          element.innerText = newstatus;
+                          if (sid == 0) {
+                              element.classList.remove("btn-danger");
+                              element.classList.add("btn-success");
+                          } else {
+                              element.classList.remove("btn-success");
+                              element.classList.add("btn-danger");
+                          } 
+                          Swal.fire(
+                          'Success!',
+                          'Status changed successfully!',
+                          'success'
+                        )
+                      } else {
+                          Swal.fire(
+                          'Error!',
+                          result,
+                          'error'
+                        )
+                      }
+                  }
+              });
+              }
+          });
+          $(".btn-delete").click(function () {
+            id = this.id;
+            $('#deletemodal').modal('toggle');
+            block = this.parentElement.parentElement;
+        });
+        $("#ajaxdelete").click(function () {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'deletebrand' %}",
+                headers:{
+                    'X-CSRFToken': csrftoken
+                  },
+                data: {
+                    id: id 
+                },
+                success: function (result) {
+                    if (result == "done") {
+                        Swal.fire(
+                          'Success!',
+                          'Brand deleted successfully!',
+                          'success'
+                        )
+                        block.remove();
+                    }
+                    else {
+                      Swal.fire(
+                          'Error!',
+                          result,
+                          'error'
+                        )
+                    }
+                }
+            });
+        });
+  </script>
+{% endblock %}

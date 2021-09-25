@@ -1,0 +1,27 @@
+{% extends './base.html' %} {% block title %}Login{% endblock %} {% block body%}
+<div class="container my-3">
+  <div class="card">
+    <div class="card-body">
+      <div class="h3 text-center text-dark font-weight-bold">Login</div>
+      <hr />
+      <div class="col-md-5 mx-auto">
+      <form method="POST">{% csrf_token %}
+        <div class="mb-3">
+            <label for="txtemail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="txtemail" name="txtemail" required
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" placeholder="Enter your email here">
+        </div>
+        <div class="mb-3">
+            <label for="txtpass" class="form-label">Password</label>
+            <input type="password" class="form-control" id="txtpass" name="txtpass" required maxlength="30"
+            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"  placeholder="Enter your password here">
+          </div>   
+          <div class="text-center">
+            <input type="submit" class="btn btn-success px-4" id="btnlogin" value="Login" />
+          </div>
+      <form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
