@@ -1,0 +1,120 @@
+{% extends './base.html' %} {% block title %}Dashboard{% endblock %}
+{% block body %}
+{% load static%}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Edit Product</h1>
+        </div>
+        <!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Edit product</li>
+          </ol>
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+    <hr />
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-body col-md-5 mx-auto">
+          <form method="post"  enctype="multipart/form-data"> {% csrf_token %}
+            <div class="col-md-8 mx-auto">
+              <div class="text-center">
+              <img class="img-fluid" height="150" width="150" id="pp" src="{{data.Image.url}}" >
+              <button type="submit" name="UpdateProductImage" class="btn btn-sm btn-default">Update Image</button>
+            </div>
+              <label for="imgproduct">Product Image</label>
+              <input type="file" name="imgproduct" id="imgproduct" class="form-control" required
+               accept=".JPG,.jpg,.JPEG,.jpeg,.PNG,.png,.GIF,.gif" />
+            </div>
+          </form>
+            <hr>
+            <form method="post" >{% csrf_token %}
+            <div class="col mt-2">
+            <label for="txtname">Product Name</label>
+            <input type="text" name="txtname" id="txtname" class="form-control" value="{{data.Name}}" placeholder="Enter Product Name" maxlength="50" required />
+          </div>
+          <div class="col mt-2">
+            <label for="txtdesc">Description</label>
+            <textarea name="txtdesc" id="txtdesc" placeholder="Enter product description" maxlength="500" class="form-control" required>{{data.Desc}}</textarea>
+          </div>
+          <div class="col mt-2 row">
+            <label class="col-md-3 mt-2" for="txtprice">Price ₹ (INR): </label>
+            <input type="number" name="txtprice" id="txtprice" value="{{data.Price}}" class="form-control col" min="1"  placeholder="Enter price per product" required />
+          </div>
+          <div class="col mt-2 row">
+            <label class="col-md-3 mt-2" for="txtqty">Quantity: </label>
+            <input type="number" name="txtqty" id="txtqty" class="form-control col" value="{{data.Quantity}}" max="10000" min="1" placeholder="Enter product quantity" required />
+          </div>  
+          <div class="col mt-2 row">
+            <label class="col-md-3 mt-2" for="txtkeywords">Keywords: </label>
+            <input type="text" name="txtkeywords" id="txtkeywords" value="{{data.Keywords}}" class="form-control col" maxlength="50" placeholder="Enter Keywords for search" required />
+          </div> 
+          <div class="col mt-2 row">
+            <label class="col-md-3 mt-2" for="selectbrand">Brand: </label> 
+            <select name="selectbrand" id="selectbrand" required class="form-control col">
+              {% for brand in brands %}
+              {% if brand.BrandName == data.ProductBrand.BrandName %}
+              <option selected value="{{ brand.id }}">{{ brand.BrandName }}</option>
+              {% else %}
+              <option value="{{ brand.id }}">{{ brand.BrandName }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div> 
+          <div class="col mt-2 row">
+            <label class="col-md-3 mt-2" for="selectcategory">Category: </label> 
+            <select name="selectcategory" id="selectcategory" required class="form-control col">
+              {% for category in categories %}
+              {% if category.CategoryName == data.ProductCat.CategoryName %}
+              <option selected value="{{ category.id }}">{{ category.CategoryName }}</option>
+              {% else %}
+              <option value="{{ category.id }}">{{ category.CategoryName }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div> 
+          <div class="text-center mt-2">
+            <button type="submit" name="UpdateProductDetails" class="btn btn-success">Update Product</button>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<script>
+  function readURL(input) {
+      if (input.files && input.files[0]) {
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+              $('#pp').attr('src', e.target.result);
+          }
+
+          reader.readAsDataURL(input.files[0]); // convert to base64 string
+      }
+  }
+
+  $("#imgproduct").change(function () {
+      readURL(this);
+  });
+</script>
+{% endblock %}

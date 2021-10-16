@@ -26,8 +26,27 @@ class Brand(models.Model):
     id = models.AutoField(primary_key=True)
     BrandName = models.CharField(max_length=50)
     Status = models.CharField(max_length=1, default="1")
+    def __str__(self):
+        return self.BrandName
 
 class Category(models.Model):
     id = models.AutoField(primary_key=True)
     CategoryName = models.CharField(max_length=50)
     Status = models.CharField(max_length=1, default="1")
+    def __str__(self):
+        return self.CategoryName
+
+class Product(models.Model):
+    id = models.AutoField(primary_key=True)
+    Name = models.CharField(max_length=50)
+    Desc = models.TextField()
+    Image = models.ImageField(upload_to='FarmersBuddy/products/')
+    Price = models.PositiveBigIntegerField()
+    Quantity = models.PositiveIntegerField()
+    Keywords = models.TextField(max_length=50)
+    ProductCat = models.ForeignKey(Category, on_delete=models.CASCADE)
+    ProductBrand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    Status = models.CharField(max_length=1, default="1")
+    def __str__(self):
+        return self.Name
+

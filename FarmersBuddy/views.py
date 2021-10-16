@@ -9,6 +9,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from django.views.decorators.cache import never_cache
 
+MAX_SIZE = 2*1024*1024
+def valid_image_size(image, max_size=MAX_SIZE):
+    width = image.size
+    height = image.size
+    if (width * height) > max_size:
+        return (False, "Image is too large")
+    return (True, image)
+
 def sendemail(receiver, subject, msg):
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     sender = "ladaebs14@gmail.com"
@@ -243,6 +251,26 @@ def changebrandstatus(request):
     else:
         return HttpResponse("Invalid Request")
 
+def updatebrand(request):
+    if request.method == "POST":
+        bid = request.POST.get("id","")
+        ubrand = request.POST.get("ubrand","")
+        print(bid)
+        if(bid != "" and ubrand != ""):
+            try:
+                obj = Brand.objects.filter(BrandName=ubrand)
+                if(len(obj) > 0):
+                    return HttpResponse("Brand already exists")
+                else:
+                    obj = Brand.objects.get(id=bid)
+                    obj.BrandName = ubrand
+                    obj.save()
+                    return HttpResponse("done")
+            except:
+                return HttpResponse("Something went wrong!")
+    else:
+        return HttpResponse("Invalid Request")
+
 def deletebrand(request):
     if request.method == "POST":
         cid = request.POST.get("id","")
@@ -260,21 +288,195 @@ def deletebrand(request):
 @never_cache
 def managecategories(request):
     if request.method == "POST":
-        # txtbrand = request.POST.get("txtbrand","")
-        # if(txtbrand != ""):
-        #     obj = Brand.objects.filter(BrandName=txtbrand)
-        #     if(len(obj) > 0):
-        #         messages.error(request, "Record already exists!")
-        #     else:
-        #         try:
-        #             brand = Brand(BrandName=txtbrand)
-        #             brand.save()
-        #             messages.success(request, "Brand added successfully!")
-        #         except:
-        #             messages.error(request, "Something went wrong!")
+        txtcategory = request.POST.get("txtcategory","")
+        if(txtcategory != ""):
+            obj = Category.objects.filter(CategoryName=txtcategory)
+            if(len(obj) > 0):
+                messages.error(request, "Record already exists!")
+            else:
+                try:
+                    category = Category(CategoryName=txtcategory)
+                    category.save()
+                    messages.success(request, "Category added successfully!")
+                except:
+                    messages.error(request, "Something went wrong!")
         pass
     categories = Category.objects.all()
     dictbrands = {
         "Categories": categories
     }
     return render(request, "FarmersBuddy/Admin/managecategories.html", dictbrands)
+
+def updatecategory(request):
+    if request.method == "POST":
+        cid = request.POST.get("id","")
+        ucategory = request.POST.get("ucategory","")
+        print(cid)
+        if(cid != "" and ucategory != ""):
+            try:
+                obj = Category.objects.filter(CategoryName=ucategory)
+                if(len(obj) > 0):
+                    return HttpResponse("Category already exists")
+                else:
+                    obj = Category.objects.get(id=cid)
+                    obj.CategoryName = ucategory
+                    obj.save()
+                    return HttpResponse("done")
+            except:
+                return HttpResponse("Something went wrong!")
+    else:
+        return HttpResponse("Invalid Request")
+
+def deletecategory(request):
+    if request.method == "POST":
+        cid = request.POST.get("id","")
+        print(cid)
+        if(cid != ""):
+            try:
+                obj = Category.objects.get(id=cid)
+                obj.delete()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+def changecategorystatus(request):
+    if request.method == "POST":
+        sid = request.POST.get("id","")
+        ustatus = request.POST.get("ustatus","")
+        if(id != "" and ustatus != ""):
+            if(ustatus == "0"):
+                ustatus = 1
+            else:
+                ustatus = 0
+            try:
+                obj = Category.objects.get(id=sid)
+                obj.Status = ustatus
+                obj.save()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+@never_cache
+def addproduct(request):
+    if request.method == "POST":
+        txtname = request.POST.get("txtname","")
+        txtdesc = request.POST.get("txtdesc","")
+        txtprice = request.POST.get("txtprice","")
+        txtqty = request.POST.get("txtqty","")
+        txtkeywords = request.POST.get("txtkeywords","")
+        selectbrand = request.POST.get("selectbrand","")
+        selectcategory = request.POST.get("selectcategory","")
+        imgproduct = request.FILES.get("imgproduct","")
+        if(valid_image_size(imgproduct)):
+            obj = Product.objects.filter(Name=txtname, ProductBrand=selectbrand, ProductCat=selectcategory)
+            if(len(obj) > 0):
+                messages.error(request, "This product is already added!")
+            else:
+                try:
+                    category = Category.objects.get(id=selectcategory)
+                    brand = Brand.objects.get(id=selectbrand)
+                    product = Product(Name=txtname, Desc=txtdesc, Image=imgproduct, Price=txtprice, Quantity=txtqty, Keywords=txtkeywords, ProductBrand=brand, ProductCat=category)
+                    product.save()
+                    messages.success(request, "Product added successfully!")
+                except:
+                    messages.error(request, "Something went wrong!")
+        else:
+            messages.error(request, "The file must be an image and size less than 2 MB!")
+    categories = Category.objects.filter(Status=1)
+    brands = Brand.objects.filter(Status=1)
+    params = {
+        "categories": categories,
+        "brands": brands
+    }
+    return render(request, "FarmersBuddy/Admin/addproduct.html", params)
+
+@never_cache
+def manageproducts(request):
+    products = Product.objects.all()
+    params = {
+        "products": products
+    }
+    return render(request, "FarmersBuddy/Admin/manageproducts.html", params)
+
+def changeproductstatus(request):
+    if request.method == "POST":
+        pid = request.POST.get("id", "")
+        ustatus = request.POST.get("ustatus", "")
+        if (pid != "" and ustatus != ""):
+            if (ustatus == "0"):
+                ustatus = 1
+            else:
+                ustatus = 0
+            try:
+                obj = Product.objects.get(id=pid)
+                obj.Status = ustatus
+                obj.save()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+def deleteproduct(request):
+    if request.method == "POST":
+        pid = request.POST.get("id", "")
+        if (pid != ""):
+            try:
+                obj = Product.objects.get(id=pid)
+                obj.delete()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+@never_cache
+def editproduct(request):
+    pid = request.GET.get("pid", "")
+    data = Product.objects.get(id=pid)
+    categories = Category.objects.filter(Status=1)
+    brands = Brand.objects.filter(Status=1)
+    params = {
+        "data": data,
+        "categories": categories,
+        "brands": brands
+    }
+    if request.method == "POST":
+        if request.POST.get("UpdateProductImage") != None:
+            imgproduct = request.FILES.get("imgproduct", "")
+            if (valid_image_size(imgproduct)):
+                obj = Product.objects.get(id=pid)
+                obj.Image = imgproduct
+                obj.save()
+                messages.success(request, "Product image updated successfully!")
+                return redirect(manageproducts)
+            else:
+                messages.error(request, "The file must be an image and size less than 2 MB!")
+        elif request.POST.get("UpdateProductDetails") != None:
+            txtname = request.POST.get("txtname", "")
+            txtdesc = request.POST.get("txtdesc", "")
+            txtprice = request.POST.get("txtprice", "")
+            txtqty = request.POST.get("txtqty", "")
+            txtkeywords = request.POST.get("txtkeywords", "")
+            selectbrand = request.POST.get("selectbrand", "")
+            selectcategory = request.POST.get("selectcategory", "")
+
+            obj = Product.objects.get(id=pid)
+            category = Category.objects.get(id=selectcategory)
+            brand = Brand.objects.get(id=selectbrand)
+            obj.Name = txtname
+            obj.Desc = txtdesc
+            obj.Price = txtprice
+            obj.Quantity = txtqty
+            obj.Keywords = txtkeywords
+            obj.ProductBrand = brand
+            obj.ProductCat = category
+            obj.save()
+            messages.success(request, "Product updated successfully!")
+            return redirect(manageproducts)
+    return render(request, "FarmersBuddy/Admin/editproduct.html", params)
+

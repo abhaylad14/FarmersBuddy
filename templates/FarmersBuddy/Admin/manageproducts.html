@@ -6,13 +6,13 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">Manage Brands</h1>
+          <h1 class="m-0">Manage Products</h1>
         </div>
         <!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Manage Brands</li>
+            <li class="breadcrumb-item active">Manage Products</li>
           </ol>
         </div>
         <!-- /.col -->
@@ -29,44 +29,41 @@
     <div class="container-fluid"></div>
     <!-- /.container-fluid -->
     <div class="card">
-      <div class="card-body col-md-6 mx-auto">
-      <form method="post"> {% csrf_token %}
-      <div class="row">
-        <div class="col-md-8 float-right">
-        <label for="txtbrand" class="form-label">Brand Name</label>
-        <input type="text" class="form-control" id="txtbrand" name="txtbrand" placeholder="Enter brand here">
-        </div>
-        <div class="col-md-4 mx-auto">
-        <br/>
-        <button type="submit" id="btnadd" name="btnadd" class="btn btn-primary mt-2" >Add Brand</button>
-        </div>
-        </div>
-      </form>
+      <div class="card-body text-right">
+      <a class="btn btn-primary" href="{% url 'addproduct' %}" >Add new product</a>
       </div>
     </div>
-    <div class="card">
+    <div class="card"> {% csrf_token %}
         <div class="card-body">
           <table id="myTable" class="table table-hover table-responsive-md">
             <thead class="table-secondary">
               <th scope="col">#</th>
-              <th scope="col">Brand Name</th>
+              <th scope="col">Image</th>
+              <th scope="col">Product Name</th>
+              <th scope="col">Price</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Brand</th>
+              <th scope="col">Category</th>
               <th scope="col">Status</th>
               <th scope="col">Action</th>
             </thead>
             <tbody>
-            {% for item in Brands %}
+            {% for item in products %}
             <tr>
             <th scope="row">{{ forloop.counter }}</th>
-            <td>{{ item.BrandName }}</td>
+            <td><img src="{{ item.Image.url }}" height="100" width="100" alt="error in product image"></td>
+            <td>{{ item.Name }}</td>
+            <td>{{ item.Price }}</td>
+            <td>{{ item.Quantity }}</td>
+            <td>{{ item.ProductBrand }}</td>
+            <td>{{ item.ProductCat }}</td>
             {% if item.Status == "1"  %}
             <td><button id="{{ item.id }}" class='btn btn-xs btn-success btn-status'>Active</button></td>
-            {% elif item.Status == "2" %}
-            <td><button id="{{ item.id }}" class='btn btn-xs btn-warning btn-status'>Unverified</button></td>
             {% else %}
             <td><button id="{{ item.id }}" class='btn btn-xs btn-danger btn-status'>Inactive</button></td>
             {% endif %}
             <td>
-              <button id="{{ item.id }}" class="btn btn-outline-warning btn-sm fas fa-edit border-0 btn-edit"></button>
+              <a href="{% url 'editproduct' %}?pid={{ item.id }}" class="btn btn-outline-warning btn-sm fas fa-edit border-0 btn-edit"></a>
               <button id="{{ item.id }}" class="btn btn-outline-danger btn-sm fas fa-trash-alt border-0 btn-delete"></button>
             </td>
             </tr>
@@ -79,30 +76,6 @@
   <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
-<!--Update Modal -->
-<div class="modal fade" id="updatemodal">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Edit here</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <label for="ubrand">Brand Name</label>
-              <input type="text" id="ubrand" name="ubrand" class="form-control" />
-            </div>
-            <div class="modal-footer justify-content-between">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-primary" id="ajaxupdate" data-dismiss="modal">Update</button>
-            </div>
-          </div>
-          <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-      </div>
-      <!-- /.modal -->
 <!--Delete Modal -->
 <div class="modal fade" id="deletemodal">
         <div class="modal-dialog">
@@ -152,7 +125,7 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
               else{
                 $.ajax({
                   type: "POST",
-                  url: "{% url 'changebrandstatus' %}",
+                  url: "{% url 'changeproductstatus' %}",
                   headers:{
                     'X-CSRFToken': csrftoken
                   },
@@ -194,7 +167,7 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
         $("#ajaxdelete").click(function () {
             $.ajax({
                 type: "POST",
-                url: "{% url 'deletebrand' %}",
+                url: "{% url 'deleteproduct' %}",
                 headers:{
                     'X-CSRFToken': csrftoken
                   },
@@ -205,47 +178,10 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
                     if (result == "done") {
                         Swal.fire(
                           'Success!',
-                          'Brand deleted successfully!',
+                          'Product deleted successfully!',
                           'success'
                         )
                         block.remove();
-                    }
-                    else {
-                      Swal.fire(
-                          'Error!',
-                          result,
-                          'error'
-                        )
-                    }
-                }
-            });
-        });
-        $(".btn-edit").click(function () {
-            id = this.id;
-            $('#updatemodal').modal('toggle');
-            block = this.parentElement.parentElement;
-            $("#ubrand").val(block.children[1].innerText);  
-        });
-        $("#ajaxupdate").click(function () {
-            let newbrand = $("#ubrand").val()
-            $.ajax({
-                type: "POST",
-                url: "{% url 'updatebrand' %}",
-                headers:{
-                    'X-CSRFToken': csrftoken
-                  },
-                data: {
-                    id: id,
-                    ubrand: newbrand,
-                },
-                success: function (result) {
-                    if (result == "done") {
-                        Swal.fire(
-                          'Success!',
-                          'Brand updated successfully!',
-                          'success'
-                        )
-                        block.children[1].innerText = newbrand;
                     }
                     else {
                       Swal.fire(
