@@ -1,6 +1,7 @@
+from math import ceil
 from typing import Type
 from django.shortcuts import render, redirect
-import re
+import re,razorpay
 from .models import *
 import hashlib, random, smtplib
 from django.contrib import messages
@@ -480,3 +481,119 @@ def editproduct(request):
             return redirect(manageproducts)
     return render(request, "FarmersBuddy/Admin/editproduct.html", params)
 
+@never_cache
+def products(request):
+    products = Product.objects.filter(Status=1)
+    cats = set()
+    for pro in products:
+        x = pro.ProductCat.CategoryName
+        cats.add(x)
+    params = {
+        "categories": cats,
+        "products": products
+    }
+    if request.method == "POST":
+        pid = request.POST.get("pid","")
+        if(pid != ""):
+            user = Userx.objects.get(id=request.session['id'])
+            product = Product.objects.get(id=pid)
+
+            count = Cart.objects.filter(UserId=user, ProductId=product)
+            if len(count) > 0:
+                messages.warning(request, "Product already present in the cart!")
+            else:
+                obj = Cart(ProductId = product, UserId = user)
+                obj.save()
+                messages.success(request, "Product added to the cart!")
+        else:
+            messages.error(request, "Something went wrong!")
+    return render(request, "FarmersBuddy/Home/products.html", params)
+
+@never_cache
+def viewproduct(request):
+    pid = request.GET.get("pid","")
+    product = Product.objects.get(id=pid, Status=1)
+    params = {
+        "product": product
+    }
+    return render(request, "FarmersBuddy/Home/viewproduct.html", params)
+
+@never_cache
+def cart(request):
+    if request.method == "POST":
+        if request.POST.get("syncqty") != None:
+            try:
+                cid = request.POST.get("cid","")
+                qty = request.POST.get("qty","")
+                obj = Cart.objects.get(id=cid)
+                obj.Quantity = qty
+                obj.save()
+                messages.success(request, "Quantity updated successfully!")
+            except:
+                print("hi")
+                messages.error(request,"Something went wrong!")
+        elif request.POST.get("deleteproduct") != None:
+            try:
+                cid = request.POST.get("cid", "")
+                obj = Cart.objects.get(id=cid)
+                obj.delete()
+                messages.success(request, "Product removed successfully!")
+            except:
+                messages.error(request, "Something went wrong!")
+    userid = Userx.objects.get(id=request.session['id'])
+    products = Cart.objects.filter(UserId=userid,Status=0)
+    params = {
+        "products" : products
+    }
+    return render(request, "FarmersBuddy/Home/cart.html",params)
+
+@never_cache
+def checkout(request):
+    userid = Userx.objects.get(id=request.session['id'])
+    products = Cart.objects.filter(UserId=userid, Status=0)
+    total = 0
+    for i in products:
+        price = i.ProductId.Price * i.Quantity
+        total += price
+    params = {
+        "products": products,
+        "total": total
+    }
+    return render(request, "FarmersBuddy/Home/checkout.html",params)
+
+@never_cache
+def confirmorder(request):
+    user = Userx.objects.get(id=request.session['id'])
+    products = Cart.objects.filter(UserId=user, Status=0)
+    total = 0
+    for i in products:
+        price = i.ProductId.Price * i.Quantity
+        total += price
+    params = {
+        "products": products,
+        "total": total,
+        "user" : user
+    }
+    request.session["totalamount"] = total
+    return render(request, "FarmersBuddy/Home/confirmorder.html",params)
+
+@never_cache
+def success(request):
+    user = Userx.objects.get(id=request.session['id'])
+    products = Cart.objects.filter(UserId=user,Status=0)
+    total = request.session["totalamount"]
+    latest = Order.objects.latest("OrderId")
+    oid = latest.OrderId + 1
+    Cart.objects.filter(UserId=user,Status=0).update(Status=1)
+    for pro in products:
+        obj = Order(OrderId=oid, ProductId=pro.ProductId, UserId=user, Quantity=pro.Quantity, TotalAmount=total)
+        print(obj.save())
+    return render(request, "FarmersBuddy/Home/success.html")
+
+@never_cache
+def about(request):
+    return render(request, "FarmersBuddy/Home/about.html")
+
+@never_cache
+def contact(request):
+    return render(request, "FarmersBuddy/Home/contact.html")

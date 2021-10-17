@@ -1,0 +1,103 @@
+{% extends './base.html' %}
+{% block title %}Confirm Order{% endblock  %}
+{% block body %}
+{% load static %}
+<div class="container">
+    <div class="card">
+        <div class="card-body col-md-6 mx-auto">
+            <p class="h4">Order Details</p>
+            <table class="table">
+                <tr>
+                    <td>Customer Name:</td>
+                    <td>{{user.FirstName}} {{user.LastName}}</td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td>{{user.Email}}</td>
+                </tr>
+                <tr>
+                    <td>Contact Number:</td>
+                    <td>{{user.Mobile}}</td>
+                </tr>
+                <tr>
+                    <td>Address:</td>
+                    <td>{{user.Address1}}</td>
+                </tr>
+                <tr>
+                    <td>Contact Number:</td>
+                    <td>{{user.Mobile}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-body">
+            <p class="h4">Product Details:</p>
+            <table class="table table-responsive-md">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Image</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Brand</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for item in products %}
+                  <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td><img src="{{item.ProductId.Image.url}}" height="75" width="75" alt="error in loading image"></td>
+                    <td>{{item.ProductId.Name}}</td>
+                    <td>{{item.ProductId.ProductBrand}}</td>
+                    <td>{{item.ProductId.ProductCat}}</td>
+                    <td>{{item.ProductId.Price}}</td>
+                    <td>{{item.Quantity}}</td>
+                    <td>₹<span class="amount"></span></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <hr>
+              <div class="row">
+                <div class="col-md-8 text-left">
+                        <p class="h4">Total Amount: ₹{{total}}</p>
+                </div>
+                <div class="col text-right">
+                <form action="{% url 'success' %}" method="POST">{% csrf_token %}
+                    <input type="hidden" custom="Hidden Element" name="hidden">
+                    <button class="btn btn-success"><i class="fas fa-rupee-sign"></i> Procced to Payment</button>
+                    <script
+                        src="https://checkout.razorpay.com/v1/checkout.js"
+                        data-key="rzp_test_jTKDdEP5jn44DF" 
+                        data-amount="{{total}}00" 
+                        data-currency="INR"
+                        data-order_id="{{product.id}}"
+                        data-buttontext="Pay with Razorpay"
+                        data-name="FarmersBuddy"
+                        data-description="An Online store for Indian Farmers"
+                        data-image="{% static 'farmer.png' %}"
+                        data-prefill.name="{{user.FirstName}} {{user.LastName}}"
+                        data-prefill.email="{{user.Email}}"
+                        data-theme.color="#1fa12e"
+                    ></script>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        let x = document.getElementsByClassName("amount");
+        for(let i=0; i < x.length; i++){
+            let price = parseInt(x[i].parentElement.parentElement.children[5].innerText)
+            let qty = parseInt(x[i].parentElement.parentElement.children[6].innerText)
+            let total = price * qty;
+            x[i].innerText = total;
+        }
+        $(".razorpay-payment-button").hide()
+    })
+</script>
+{% endblock  %}

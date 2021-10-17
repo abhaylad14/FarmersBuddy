@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.core.validators import RegexValidator
 
@@ -49,4 +51,21 @@ class Product(models.Model):
     Status = models.CharField(max_length=1, default="1")
     def __str__(self):
         return self.Name
+
+class Cart(models.Model):
+    id = models.AutoField(primary_key=True)
+    ProductId = models.ForeignKey(Product, on_delete=models.CASCADE)
+    UserId = models.ForeignKey(Userx, on_delete=models.CASCADE)
+    Quantity = models.PositiveIntegerField(default=1)
+    Status = models.CharField(max_length=1, default="0")
+
+class Order(models.Model):
+    OrderId = models.IntegerField()
+    ProductId = models.ForeignKey(Product, on_delete=models.CASCADE)
+    UserId = models.ForeignKey(Userx, on_delete=models.CASCADE)
+    Quantity = models.PositiveIntegerField(default=1)
+    TotalAmount = models.PositiveIntegerField()
+
+
+
 

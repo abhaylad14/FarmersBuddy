@@ -7,6 +7,8 @@ Author URL: http://w3layouts.com
 <html lang="zxx">
 {% load static %}
 <head>
+<!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css'%}">
 <!-- jQuery -->
 <script src="{% static 'plugins/jquery/jquery.min.js'%}"></script>
   <!-- Required meta tags -->
@@ -47,22 +49,25 @@ Author URL: http://w3layouts.com
           <ul class="navbar-nav ml-auto">
           {% if request.session.admin == none %}
             <li class="nav-item active">
-              <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
+              <a class="nav-link" href="{% url 'index' %}"> <i class="fas fa-home"></i> Home <span class="sr-only">(current)</span></a>
             </li>
             {% else %}
             <li class="nav-item active">
-              <a class="nav-link" href="{% url 'admindashboard' %}">Home <span class="sr-only">(current)</span></a>
+              <a class="nav-link" href="{% url 'admindashboard' %}"><i class="fas fa-home"></i> Home <span class="sr-only">(current)</span></a>
             </li>
           {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="about.html">About</a>
+              <a class="nav-link" href="{% url 'about' %}"><i class="far fa-address-card"></i> About</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="services.html">Services</a>
+              <a class="nav-link" href="{% url 'products' %}"><i class="fas fa-cubes"></i> Products</a>
             </li>
           
             <li class="nav-item">
-              <a class="nav-link" href="contact.html">Contact</a>
+              <a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-id-badge"></i> Contact</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> Cart</a>
             </li>
             {% if request.session.id == none %}
             <li class="nav-item">
