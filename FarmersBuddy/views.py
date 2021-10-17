@@ -597,3 +597,42 @@ def about(request):
 @never_cache
 def contact(request):
     return render(request, "FarmersBuddy/Home/contact.html")
+
+@never_cache
+def manageorders(request):
+    obj = Order.objects.all()
+    orders = set()
+    for i in obj:
+        x = i.OrderId
+        orders.add(x)
+    print(orders)
+    params = {
+        "orders": orders,
+        "data": obj
+    }
+    return render(request, "FarmersBuddy/Admin/manageorders.html", params)
+
+
+def changepassword(request):
+    if request.method == "POST":
+        txtpass = request.POST.get("txtpass","")
+        txtpass1 = request.POST.get("txtpass1", "")
+        txtpass2 = request.POST.get("txtpass2", "")
+        if txtpass != "" and txtpass1 != "" and txtpass2 != "":
+            if(txtpass1 == txtpass2):
+                txtpass = hashlib.sha256(txtpass.encode())
+                txtpass1 = hashlib.sha256(txtpass1.encode())
+
+                obj = Userx.objects.filter(id=request.session["id"], Password = txtpass.hexdigest())
+                if len(obj) == 1:
+                    obj = Userx.objects.get (id=request.session["id"])
+                    obj.Password = txtpass1.hexdigest()
+                    obj.save()
+                    messages.success(request, "Your password changed successfully!")
+                else:
+                    messages.error(request, "Your current password is Invalid!")
+            else:
+                messages.error(request, "New Password and Re-Entered Password are not same!")
+        else:
+            messages.error(request, "Empty form!")
+    return render(request, "FarmersBuddy/Home/changepassword.html")

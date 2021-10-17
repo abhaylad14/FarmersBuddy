@@ -10,6 +10,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('verify/', views.verify, name='verify'),
     path('logout/', views.logout, name='logout'),
+    path('changepassword/', views.changepassword, name='changepassword'),
 
     # Admin dashboard
     path('admin/dashboard', views.admindashboard, name='admindashboard'),
@@ -47,4 +48,8 @@ urlpatterns = [
     path('checkout', views.checkout, name='checkout'),
     path('confirmorder', views.confirmorder, name='confirmorder'),
     path('success', views.success, name='success'),
+
+    # orders
+    path('manageorders', views.manageorders, name='manageorders'),
+
 ]
