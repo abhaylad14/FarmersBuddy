@@ -11,6 +11,7 @@ urlpatterns = [
     path('verify/', views.verify, name='verify'),
     path('logout/', views.logout, name='logout'),
     path('changepassword/', views.changepassword, name='changepassword'),
+    path('editprofile/', views.editprofile, name='editprofile'),
 
     # Admin dashboard
     path('admin/dashboard', views.admindashboard, name='admindashboard'),

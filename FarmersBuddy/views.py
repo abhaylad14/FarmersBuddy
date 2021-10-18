@@ -636,3 +636,26 @@ def changepassword(request):
         else:
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/changepassword.html")
+
+@never_cache
+def editprofile(request):
+    if request.method == "POST":
+        txtfname = request.POST.get("txtfname", "")
+        txtlname = request.POST.get("txtlname", "")
+        txtmobile = request.POST.get("txtmobile", "")
+        txtaddress = request.POST.get("txtaddress", "")
+        if txtfname!= "" and txtlname != "" and txtmobile != "" and txtaddress != "":
+            obj = Userx.objects.get(id=request.session["id"])
+            obj.FirstName = txtfname
+            obj.LastName = txtlname
+            obj.Mobile = txtmobile
+            obj.Address1 = txtaddress
+            obj.save()
+            messages.success(request, "Your details updated successfully!")
+        else:
+            messages.error(request, "Empty Form!s")
+    user = Userx.objects.get(id=request.session["id"])
+    params = {
+        "user":user,
+    }
+    return render(request, "FarmersBuddy/Home/editprofile.html", params)

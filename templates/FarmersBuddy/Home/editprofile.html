@@ -1,0 +1,48 @@
+{% extends './base.html' %}
+{% block title %}Edit Profile{% endblock  %}
+{% block body %}
+<div class="container mb-4">
+    <div class="card">
+        <div class="card-body col-md-6 mx-auto">
+            <form method="post"> {% csrf_token %}
+                <div class="mb-3">
+                    <label for="txtfname" class="form-label">First Name</label>
+                    <input type="text" value="{{user.FirstName}}" class="form-control" id="txtfname" name="txtfname" required maxlength="20"
+                    title="Only alphabets are allowed"
+                    pattern="^[A-Za-z]{2,20}$"  placeholder="eg. John">
+                  </div>
+                  <div class="mb-3">
+                    <label for="txtlname" class="form-label">Last Name</label>
+                    <input type="text" value="{{user.LastName}}" class="form-control" id="txtlname" name="txtlname" required maxlength="20"
+                    title="Only alphabets are allowed"
+                    pattern="^[A-Za-z]{2,20}$"  placeholder="eg. Wick">
+                  </div>
+                  <div class="mb-3">
+                    <label for="txtmobile" class="form-label">Mobile No.</label>
+                    <div class="input-group">
+                    <div class="input-group-text">+91</div>
+                    <input type="text" value="{{user.Mobile}}" class="form-control" id="txtmobile" name="txtmobile" required maxlength="10"
+                    title="Mobile number must contain 10 digits only and must start with (6 to 9)"
+                    pattern="^[6-9]\d{9}$"  placeholder="Enter your mobile number">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="txtaddress" class="form-label">Address</label>
+                    <textarea type="text" class="form-control" id="txtaddress" name="txtaddress" required maxlength="300"
+                    pattern="^[0-9A-Za-z/,]+$"  placeholder="Enter your address here">{{user.Address1}}</textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="txtemail" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="txtemail" name="txtemail" required disabled
+                    title="characters must followed by an @ sign, followed by more characters, and then a '.'"
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" placeholder="Enter your email here"
+                    value="{{user.Email}}">
+                  </div>
+                  <div class="text-center">
+                      <button class="btn btn-success" type="submit">Update Details</button>
+                  </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock  %}
