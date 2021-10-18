@@ -483,6 +483,8 @@ def editproduct(request):
 
 @never_cache
 def products(request):
+    if "id" not in request.session:
+        return redirect(index)
     products = Product.objects.filter(Status=1)
     cats = set()
     for pro in products:
@@ -540,6 +542,8 @@ def cart(request):
                 messages.success(request, "Product removed successfully!")
             except:
                 messages.error(request, "Something went wrong!")
+    if "id" not in request.session:
+        return redirect(index)
     userid = Userx.objects.get(id=request.session['id'])
     products = Cart.objects.filter(UserId=userid,Status=0)
     params = {
@@ -614,6 +618,8 @@ def manageorders(request):
 
 
 def changepassword(request):
+    if "id" not in request.session:
+        return redirect(index)
     if request.method == "POST":
         txtpass = request.POST.get("txtpass","")
         txtpass1 = request.POST.get("txtpass1", "")
@@ -639,6 +645,8 @@ def changepassword(request):
 
 @never_cache
 def editprofile(request):
+    if "id" not in request.session:
+        return redirect(index)
     if request.method == "POST":
         txtfname = request.POST.get("txtfname", "")
         txtlname = request.POST.get("txtlname", "")
@@ -659,3 +667,64 @@ def editprofile(request):
         "user":user,
     }
     return render(request, "FarmersBuddy/Home/editprofile.html", params)
+
+
+def forgotpassword(request):
+    if request.method == "POST":
+        txtemail = request.POST.get("txtemail","")
+        if(txtemail != ""):
+            count = Userx.objects.filter(Email=txtemail)
+            if len(count) == 1:
+                otp = random.randint(111111, 999999)
+                request.session['otp'] = otp
+                request.session["email"] = txtemail
+                sendemail(txtemail,"OTP for Forgot Password", "Your OTP for forgot password is: " + str(otp))
+                return redirect(verifyotp)
+            else:
+                messages.error(request, "Please enter registered email only!")
+        else:
+            messages.error(request, "Empty form!")
+    return render(request, "FarmersBuddy/Home/forgotpassword.html")
+
+
+def verifyotp(request):
+    otp = request.session['otp']
+    email = str(request.session['email'])
+    if request.method == "POST":
+        txtotp = request.POST.get("txtotp", "")
+        if (txtotp != ""):
+            if (txtotp == str(otp)):
+                obj = Userx.objects.get(Email=email)
+                obj.Status = "1"
+                obj.save()
+                request.session['id'] = obj.id
+                return redirect(newpassword)
+            else:
+                messages.error(request, "Invalid OTP")
+        else:
+            messages.error(request, "Empty from!")
+    return render(request, "FarmersBuddy/Home/verifyotp.html")
+
+
+def newpassword(request):
+    if "id" not in request.session:
+        return redirect(index)
+    if request.method == "POST":
+        txtpass1 = request.POST.get("txtpass1", "")
+        txtpass2 = request.POST.get("txtpass2", "")
+        if txtpass1 != "" and txtpass2 != "":
+            if(txtpass1 == txtpass2):
+                txtpass1 = hashlib.sha256(txtpass1.encode())
+                obj = Userx.objects.get (id=request.session["id"])
+                obj.Password = txtpass1.hexdigest()
+                obj.save()
+                del request.session['id']
+                del request.session['email']
+                del request.session['otp']
+                messages.success(request, "Your password changed successfully!")
+                return redirect(login)
+            else:
+                messages.error(request, "New Password and Re-Entered Password are not same!")
+        else:
+            messages.error(request, "Empty form!")
+    return render(request, "FarmersBuddy/Home/newpassword.html")

@@ -11,7 +11,7 @@ class Userx(models.Model):
     FirstName = models.CharField(max_length=20)
     LastName = models.CharField(max_length=20)
     Email = models.EmailField(max_length=50)
-    Password = models.CharField(max_length=64, editable=False)
+    Password = models.CharField(max_length=64)
     Mobile = models.CharField(max_length=10, validators=[RegexValidator(r'^\d{10}$')])
     Address1 = models.TextField(max_length=100, verbose_name="Address")
     Address2 = models.TextField(blank=True,max_length=100, verbose_name="Alternative Address")

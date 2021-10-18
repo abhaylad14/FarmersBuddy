@@ -11,12 +11,15 @@
             <input type="email" class="form-control" id="txtemail" name="txtemail" required
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" placeholder="Enter your email here">
         </div>
-        <div class="mb-3">
+        <div class="mb-2">
             <label for="txtpass" class="form-label">Password</label>
             <input type="password" class="form-control" id="txtpass" name="txtpass" required maxlength="30"
             pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"  placeholder="Enter your password here">
-          </div>   
-          <div class="text-center">
+          </div>  
+          <div class="text-right">
+            <a class="text-danger" href="{% url 'forgotpassword' %}">Forgot Password?</a>
+          </div> 
+          <div class="text-center mt-2">
             <input type="submit" class="btn btn-success px-4" id="btnlogin" value="Login" />
           </div>
       <form>
