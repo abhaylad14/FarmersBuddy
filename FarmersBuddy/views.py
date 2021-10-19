@@ -1,3 +1,4 @@
+import json
 from math import ceil
 from typing import Type
 from django.shortcuts import render, redirect
@@ -215,6 +216,7 @@ def deletecustomer(request):
 def managebrands(request):
     if request.method == "POST":
         txtbrand = request.POST.get("txtbrand","")
+        txtbrand = txtbrand.strip()
         if(txtbrand != ""):
             obj = Brand.objects.filter(BrandName=txtbrand)
             if(len(obj) > 0):
@@ -290,6 +292,7 @@ def deletebrand(request):
 def managecategories(request):
     if request.method == "POST":
         txtcategory = request.POST.get("txtcategory","")
+        txtcategory = txtcategory.strip()
         if(txtcategory != ""):
             obj = Category.objects.filter(CategoryName=txtcategory)
             if(len(obj) > 0):
@@ -483,32 +486,21 @@ def editproduct(request):
 
 @never_cache
 def products(request):
-    if "id" not in request.session:
-        return redirect(index)
     products = Product.objects.filter(Status=1)
     cats = set()
     for pro in products:
         x = pro.ProductCat.CategoryName
         cats.add(x)
+    print(products)
     params = {
         "categories": cats,
         "products": products
     }
     if request.method == "POST":
-        pid = request.POST.get("pid","")
-        if(pid != ""):
-            user = Userx.objects.get(id=request.session['id'])
-            product = Product.objects.get(id=pid)
-
-            count = Cart.objects.filter(UserId=user, ProductId=product)
-            if len(count) > 0:
-                messages.warning(request, "Product already present in the cart!")
-            else:
-                obj = Cart(ProductId = product, UserId = user)
-                obj.save()
-                messages.success(request, "Product added to the cart!")
-        else:
-            messages.error(request, "Something went wrong!")
+        txtcart = request.POST.get("txtcart","")
+        txtcart = json.loads(txtcart)
+        request.session["cart"] = txtcart
+        return HttpResponse("done")
     return render(request, "FarmersBuddy/Home/products.html", params)
 
 @never_cache
@@ -522,77 +514,84 @@ def viewproduct(request):
 
 @never_cache
 def cart(request):
-    if request.method == "POST":
-        if request.POST.get("syncqty") != None:
-            try:
-                cid = request.POST.get("cid","")
-                qty = request.POST.get("qty","")
-                obj = Cart.objects.get(id=cid)
-                obj.Quantity = qty
-                obj.save()
-                messages.success(request, "Quantity updated successfully!")
-            except:
-                print("hi")
-                messages.error(request,"Something went wrong!")
-        elif request.POST.get("deleteproduct") != None:
-            try:
-                cid = request.POST.get("cid", "")
-                obj = Cart.objects.get(id=cid)
-                obj.delete()
-                messages.success(request, "Product removed successfully!")
-            except:
-                messages.error(request, "Something went wrong!")
-    if "id" not in request.session:
-        return redirect(index)
-    userid = Userx.objects.get(id=request.session['id'])
-    products = Cart.objects.filter(UserId=userid,Status=0)
-    params = {
-        "products" : products
-    }
-    return render(request, "FarmersBuddy/Home/cart.html",params)
+    if "cart" in request.session:
+        cart = request.session["cart"]
+        cartpid = []
+        for key in cart.keys():
+            cartpid.append(int(key))
+        products = []
+        for i in cartpid:
+            x = Product.objects.get(id = i)
+            products.append(x)
+        print(products)
+        params = {
+            "products" : products
+        }
+        return render(request, "FarmersBuddy/Home/cart.html",params)
+    return render(request, "FarmersBuddy/Home/cart.html")
 
 @never_cache
 def checkout(request):
+    if "id" not in request.session:
+        return redirect(login)
+    if "cart" not in request.session:
+        return redirect(products)
+    cart = request.session["cart"]
+    pro = []
+    for key in cart.keys():
+        obj = Product.objects.get(id=key)
+        pro.append(obj)
     userid = Userx.objects.get(id=request.session['id'])
-    products = Cart.objects.filter(UserId=userid, Status=0)
     total = 0
-    for i in products:
-        price = i.ProductId.Price * i.Quantity
+    for i in pro:
+        x = i.id
+        price = i.Price * cart[str(x)]
         total += price
+    request.session["total"] = total
     params = {
-        "products": products,
+        "products": pro,
         "total": total
     }
     return render(request, "FarmersBuddy/Home/checkout.html",params)
 
 @never_cache
 def confirmorder(request):
+    if "id" not in request.session:
+        return redirect(login)
+    if "cart" not in request.session:
+        return redirect(products)
+    if "total" not in request.session:
+        return redirect(products)
     user = Userx.objects.get(id=request.session['id'])
-    products = Cart.objects.filter(UserId=user, Status=0)
-    total = 0
-    for i in products:
-        price = i.ProductId.Price * i.Quantity
-        total += price
+    total = request.session["total"]
+    cart = request.session["cart"]
+    obj = Order.objects.filter(Status=0,User=user)
+    if(len(obj)==0):
+        order = Order(User=user,Data=cart,Total=total)
+        order.save()
+    else:
+        order = Order.objects.get(User=user,Status=0)
+        order.Data = cart
+        order.save()
+    pro = []
+    for key in cart.keys():
+        obj = Product.objects.get(id=key)
+        pro.append(obj)
     params = {
-        "products": products,
+        "products": pro,
         "total": total,
         "user" : user
     }
-    request.session["totalamount"] = total
     return render(request, "FarmersBuddy/Home/confirmorder.html",params)
 
 @never_cache
 def success(request):
-    user = Userx.objects.get(id=request.session['id'])
-    products = Cart.objects.filter(UserId=user,Status=0)
-    total = request.session["totalamount"]
-    latest = Order.objects.latest("OrderId")
-    oid = latest.OrderId + 1
-    Cart.objects.filter(UserId=user,Status=0).update(Status=1)
-    for pro in products:
-        obj = Order(OrderId=oid, ProductId=pro.ProductId, UserId=user, Quantity=pro.Quantity, TotalAmount=total)
-        print(obj.save())
-    return render(request, "FarmersBuddy/Home/success.html")
+    if "id" in request.session:
+        user = Userx.objects.get(id=request.session['id'])
+        total = request.session["total"]
+        return render(request, "FarmersBuddy/Home/success.html")
+    else:
+        return redirect(products)
 
 @never_cache
 def about(request):

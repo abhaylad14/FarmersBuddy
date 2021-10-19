@@ -9,8 +9,7 @@ Author URL: http://w3layouts.com
 <head>
 <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css'%}">
-<!-- jQuery -->
-<script src="{% static 'plugins/jquery/jquery.min.js'%}"></script>
+  <script src="{% static 'plugins/jquery/jquery.min.js'%}"></script>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -67,7 +66,7 @@ Author URL: http://w3layouts.com
               <a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-id-badge"></i> Contact</a>
             </li> {% endcomment %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> Cart</a>
+              <a class="nav-link" href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> Cart <span id="numpro" class="badge bg-light text-dark">0</span></a>
             </li>
             <li class="nav-item">
             <div class="dropdown">
@@ -122,7 +121,8 @@ Author URL: http://w3layouts.com
   <div style="margin-top: 7%;">
 {% block body %}{% endblock %}
 </div>
-  
+
+
 
   <!--/w3l-footer-29-main-->
   <section class="w3l-footer-29-main">
@@ -252,9 +252,10 @@ Author URL: http://w3layouts.com
   <!-- disable body scroll which navbar is in active -->
 
   <!-- Template JavaScript -->
-  <script src="{% static 'FarmersBuddy/js/jquery-3.3.1.min.js'%}"></script>
+  {% comment %} <script src="{% static 'FarmersBuddy/js/jquery-3.3.1.min.js'%}"></script> {% endcomment %}
   <script src="{% static 'FarmersBuddy/js/theme-change.js'%}"></script>
   <script src="{% static 'FarmersBuddy/js/owl.carousel.js'%}"></script>
+  <script src="{% static 'FarmersBuddy/js/bootstrap.min.js' %}"></script>
   <!-- script for banner slider-->
   <script>
     $(document).ready(function () {
@@ -352,7 +353,7 @@ Author URL: http://w3layouts.com
   </script>
   <!--//MENU-JS-->
 
-  <script src="{% static 'FarmersBuddy/js/bootstrap.min.js' %}"></script>
+  
   {% for message in messages %}
   {% if message.tags == "danger" %}
   <script>
@@ -370,6 +371,15 @@ Author URL: http://w3layouts.com
   )</script>
   {% endif %}
   {% endfor %}
-
+  <script>
+    if(localStorage.getItem('cart') == null)
+{
+  var cart={};
+}
+else{
+  cart= JSON.parse(localStorage.getItem('cart'));
+}
+document.getElementById('numpro').innerText = Object.keys(cart).length;
+  </script>
 </body>
 </html>

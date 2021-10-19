@@ -48,12 +48,12 @@
                     {% for item in products %}
                   <tr>
                     <th scope="row">{{forloop.counter}}</th>
-                    <td><img src="{{item.ProductId.Image.url}}" height="75" width="75" alt="error in loading image"></td>
-                    <td>{{item.ProductId.Name}}</td>
-                    <td>{{item.ProductId.ProductBrand}}</td>
-                    <td>{{item.ProductId.ProductCat}}</td>
-                    <td>{{item.ProductId.Price}}</td>
-                    <td>{{item.Quantity}}</td>
+                    <td><img src="{{item.Image.url}}" height="75" width="75" alt="error in loading image"></td>
+                    <td>{{item.Name}}</td>
+                    <td>{{item.ProductBrand}}</td>
+                    <td>{{item.ProductCat}}</td>
+                    <td>{{item.Price}}</td>
+                    <td id="{{item.id}}" class="qty"></td>
                     <td>₹<span class="amount"></span></td>
                   </tr>
                   {% endfor %}
@@ -77,7 +77,7 @@
                         data-buttontext="Pay with Razorpay"
                         data-name="FarmersBuddy"
                         data-description="An Online store for Indian Farmers"
-                        data-image="{% static 'farmer.png' %}"
+                        data-image="{% static 'product.png' %}"
                         data-prefill.name="{{user.FirstName}} {{user.LastName}}"
                         data-prefill.email="{{user.Email}}"
                         data-theme.color="#1fa12e"
@@ -98,6 +98,30 @@
             x[i].innerText = total;
         }
         $(".razorpay-payment-button").hide()
+    })
+</script>
+<script>
+    $(document).ready(function(){
+      if(localStorage.getItem('cart') == null)
+      {
+        var cart={};
+      }
+      else{
+        cart= JSON.parse(localStorage.getItem('cart'));
+        console.log(cart)
+        let pid = document.getElementsByClassName("qty");
+        for(let i=0; i < pid.length; i++){
+          pid[i].innerText = cart[pid[i].id];
+        }
+      }
+        let x = document.getElementsByClassName("amount");
+        for(let i=0; i < x.length; i++){
+            let price = parseInt(x[i].parentElement.parentElement.children[5].innerText)
+            let qty = parseInt(x[i].parentElement.parentElement.children[6].innerText)
+            let total = price * qty;
+            x[i].innerText = total;
+        }
+
     })
 </script>
 {% endblock  %}

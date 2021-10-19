@@ -43,7 +43,7 @@
                             Total Price: ₹<span id="tprice">{{product.Price}}</span>
                         </div>
                     </div>
-                    <hr>
+                    <hr>{% csrf_token %}
                         <button class="btn btn-success" type="submit"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
                     </form>
                 </div>
