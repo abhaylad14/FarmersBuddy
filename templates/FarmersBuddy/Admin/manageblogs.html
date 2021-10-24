@@ -6,13 +6,13 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">Manage Products</h1>
+          <h1 class="m-0">Manage Blogs</h1>
         </div>
         <!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Manage Products</li>
+            <li class="breadcrumb-item active">Manage Blogs</li>
           </ol>
         </div>
         <!-- /.col -->
@@ -30,7 +30,7 @@
     <!-- /.container-fluid -->
     <div class="card">
       <div class="card-body text-right">
-      <a class="btn btn-primary" href="{% url 'addproduct' %}" >Add new product</a>
+      <a class="btn btn-primary" href="{% url 'addblog' %}" >Add new Blog</a>
       </div>
     </div>
     <div class="card"> {% csrf_token %}
@@ -38,32 +38,26 @@
           <table id="myTable" class="table table-hover table-responsive-md">
             <thead class="table-secondary">
               <th scope="col">#</th>
-              <th scope="col">Image</th>
-              <th scope="col">Product Name</th>
-              <th scope="col">Price</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Brand</th>
-              <th scope="col">Category</th>
+              <th scope="col">Title</th>
+              <th scope="col">Description</th>
+              <th scope="col">Date</th>
               <th scope="col">Status</th>
               <th scope="col">Action</th>
             </thead>
             <tbody>
-            {% for item in products %}
+            {% for item in blogs %}
             <tr>
             <th scope="row">{{ forloop.counter }}</th>
-            <td><img src="{{ item.Image.url }}" height="100" width="100" alt="error in product image"></td>
-            <td>{{ item.Name }}</td>
-            <td>{{ item.Price }}</td>
-            <td>{{ item.Quantity }}</td>
-            <td>{{ item.ProductBrand }}</td>
-            <td>{{ item.ProductCat }}</td>
+            <td>{{ item.Title }}</td>
+            <td>{{ item.Desc |slice:':50'}}...</td>
+            <td>{{ item.Date }}</td>    
             {% if item.Status == "1"  %}
             <td><button id="{{ item.id }}" class='btn btn-xs btn-success btn-status'>Active</button></td>
             {% else %}
             <td><button id="{{ item.id }}" class='btn btn-xs btn-danger btn-status'>Inactive</button></td>
             {% endif %}
             <td>
-              <a href="{% url 'editproduct' %}?pid={{ item.id }}" class="btn btn-outline-warning btn-sm fas fa-edit border-0 btn-edit"></a>
+              <a href="{% url 'editblog' %}?bid={{ item.id }}" class="btn btn-outline-warning btn-sm fas fa-edit border-0 btn-edit"></a>
               <button id="{{ item.id }}" class="btn btn-outline-danger btn-sm fas fa-trash-alt border-0 btn-delete"></button>
             </td>
             </tr>
@@ -87,7 +81,7 @@
               </button>
             </div>
             <div class="modal-body">
-              <p>Are you sure want to delete this Product?</p>
+              <p>Are you sure want to delete this Blog?</p>
             </div>
             <div class="modal-footer justify-content-between">
               <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -107,7 +101,6 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
   } );
   $(".btn-status").click(function () {
               let id = this.id;
-              console.log(id);
               let element = this;
               let status = this.innerText;
               let sid = "";
@@ -119,18 +112,14 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
                   newstatus = "Active";
                   sid = 0;
               }
-              if(status == "Unverified"){
-
-              }
-              else{
                 $.ajax({
                   type: "POST",
-                  url: "{% url 'changeproductstatus' %}",
+                  url: "{% url 'changeblogstatus' %}",
                   headers:{
                     'X-CSRFToken': csrftoken
                   },
                   data: {
-                      id: id,
+                      bid: id,
                       ustatus: sid
                   },
                   success: function (result) {
@@ -157,7 +146,6 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
                       }
                   }
               });
-              }
           });
           $(".btn-delete").click(function () {
             id = this.id;
@@ -167,18 +155,18 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
         $("#ajaxdelete").click(function () {
             $.ajax({
                 type: "POST",
-                url: "{% url 'deleteproduct' %}",
+                url: "{% url 'deleteblog' %}",
                 headers:{
                     'X-CSRFToken': csrftoken
                   },
                 data: {
-                    id: id 
+                    bid: id 
                 },
                 success: function (result) {
                     if (result == "done") {
                         Swal.fire(
                           'Success!',
-                          'Product deleted successfully!',
+                          'Blog deleted successfully!',
                           'success'
                         )
                         block.remove();

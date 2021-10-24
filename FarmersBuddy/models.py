@@ -57,8 +57,12 @@ class Order(models.Model):
     User = models.ForeignKey(Userx, on_delete=models.CASCADE)
     Data = models.TextField()
     Total = models.PositiveIntegerField()
+    Address = models.TextField()
     Status = models.CharField(max_length=1, default="0")
 
-
-
-
+class Blog(models.Model):
+    id = models.AutoField(primary_key=True)
+    Title = models.TextField(max_length=100)
+    Desc = models.TextField()
+    Date = models.DateField(auto_now_add=True)
+    Status = models.CharField(max_length=1, default="1")

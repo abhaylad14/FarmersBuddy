@@ -20,15 +20,22 @@
                     <td>{{user.Mobile}}</td>
                 </tr>
                 <tr>
+                    <form method="post"> {% csrf_token %}
                     <td>Address:</td>
-                    <td>{{user.Address1}}</td>
-                </tr>
-                <tr>
-                    <td>Contact Number:</td>
-                    <td>{{user.Mobile}}</td>
+                    <td>
+                    {% if request.session.address %}
+                        <textarea name="txtaddress" id="txtaddress" class="form-control" maxlength="100" required>{{request.session.address}}</textarea>
+                    {% else %}
+                        <textarea name="txtaddress" id="txtaddress" class="form-control" maxlength="100" required>{{user.Address1}}</textarea>
+                        {% endif %}
+                    </td>
                 </tr>
             </table>
+            <div class="text-center">
+                <button class="btn btn-dark btn-sm" name="btnupdate" type="submit">Use this address</button>
+            </div>
         </div>
+    </form>
         <div class="card-body">
             <p class="h4">Product Details:</p>
             <table class="table table-responsive-md">

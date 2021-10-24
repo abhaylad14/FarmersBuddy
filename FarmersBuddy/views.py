@@ -2,7 +2,7 @@ import json
 from math import ceil
 from typing import Type
 from django.shortcuts import render, redirect
-import re,razorpay
+import re, razorpay
 from .models import *
 import hashlib, random, smtplib
 from django.contrib import messages
@@ -11,13 +11,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from django.views.decorators.cache import never_cache
 
-MAX_SIZE = 2*1024*1024
+MAX_SIZE = 2 * 1024 * 1024
+
+
 def valid_image_size(image, max_size=MAX_SIZE):
     width = image.size
     height = image.size
     if (width * height) > max_size:
         return (False, "Image is too large")
     return (True, image)
+
 
 def sendemail(receiver, subject, msg):
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
@@ -30,15 +33,17 @@ def sendemail(receiver, subject, msg):
     message['Subject'] = subject
     message.attach(MIMEText(msg, 'plain'))
     try:
-        server.sendmail(sender,receiver,message.as_string())
+        server.sendmail(sender, receiver, message.as_string())
         print("Successfully sent email")
         server.quit()
     except smtplib.SMTPException:
         print("Error: unable to send email")
 
+
 @never_cache
 def index(request):
-    return render(request,"FarmersBuddy/Home/index.html")
+    return render(request, "FarmersBuddy/Home/index.html")
+
 
 @never_cache
 def verify(request):
@@ -46,10 +51,10 @@ def verify(request):
     email = str(request.session['email'])
     sendemail(email, "Verify Account", "Your verification OTP is: " + str(otp))
     if request.method == "POST":
-        txtotp = request.POST.get("txtotp","")
-        if(txtotp != ""):
-            if(txtotp == str(otp)):
-                obj = Userx.objects.get(Email = email)
+        txtotp = request.POST.get("txtotp", "")
+        if (txtotp != ""):
+            if (txtotp == str(otp)):
+                obj = Userx.objects.get(Email=email)
                 obj.Status = "1"
                 obj.save()
                 request.session['id'] = obj.id
@@ -60,6 +65,7 @@ def verify(request):
             messages.error(request, "Empty from!")
     return render(request, "FarmersBuddy/Home/verify.html")
 
+
 @never_cache
 def logout(request):
     del request.session['id']
@@ -67,17 +73,18 @@ def logout(request):
         del request.session['admin']
     return redirect(index)
 
+
 @never_cache
 def login(request):
     if request.method == "POST":
-        txtemail = request.POST.get("txtemail","")
-        txtpass = request.POST.get("txtpass","")
+        txtemail = request.POST.get("txtemail", "")
+        txtpass = request.POST.get("txtpass", "")
         print(txtemail, txtpass)
-        if(txtemail != "" and txtpass != ""):
+        if (txtemail != "" and txtpass != ""):
             pass1 = hashlib.sha256(txtpass.encode())
-            check = Userx.objects.filter(Email = txtemail, Password = pass1.hexdigest(), Status = "1")
-            if(len(check) == 1):
-                obj = Userx.objects.get(Email = txtemail)
+            check = Userx.objects.filter(Email=txtemail, Password=pass1.hexdigest(), Status="1")
+            if (len(check) == 1):
+                obj = Userx.objects.get(Email=txtemail)
                 request.session['id'] = obj.id
                 if obj.Type == "c":
                     return redirect(index)
@@ -85,9 +92,9 @@ def login(request):
                     request.session['admin'] = True
                     return redirect(admindashboard)
             else:
-                check = Userx.objects.filter(Email = txtemail, Password = pass1.hexdigest(), Status = "2")
-                if(len(check) == 1):
-                    otp = random.randint(111111,999999)
+                check = Userx.objects.filter(Email=txtemail, Password=pass1.hexdigest(), Status="2")
+                if (len(check) == 1):
+                    otp = random.randint(111111, 999999)
                     request.session['otp'] = otp
                     request.session['email'] = txtemail
                     print(otp)
@@ -101,59 +108,62 @@ def login(request):
     else:
         return redirect(index)
 
+
 @never_cache
 def registration(request):
     if request.method == "POST":
         flagfname = flaglname = flagmobile = flagaddress = flagemail = flagpass1 = flagpass1 = 0
         errstr = ""
         txtfname = request.POST.get("txtfname", "")
-        txtlname = request.POST.get("txtlname","")
-        txtmobile = request.POST.get("txtmobile","")
-        txtaddress = request.POST.get("txtaddress","")
-        txtemail = request.POST.get("txtemail","")
-        txtpass1 = request.POST.get("txtpass1","")
-        txtpass2 = request.POST.get("txtpass2","")
-        
-        if(txtfname != "" and txtlname != "" and txtmobile != "" and txtaddress != "" and txtemail != "" and 
-        txtpass1 != "" and txtpass2 != ""):
-            if(re.search("^[a-zA-Z]{2,20}$",txtfname)):
+        txtlname = request.POST.get("txtlname", "")
+        txtmobile = request.POST.get("txtmobile", "")
+        txtaddress = request.POST.get("txtaddress", "")
+        txtemail = request.POST.get("txtemail", "")
+        txtpass1 = request.POST.get("txtpass1", "")
+        txtpass2 = request.POST.get("txtpass2", "")
+
+        if (txtfname != "" and txtlname != "" and txtmobile != "" and txtaddress != "" and txtemail != "" and
+                txtpass1 != "" and txtpass2 != ""):
+            if (re.search("^[a-zA-Z]{2,20}$", txtfname)):
                 flagfname = 1
             else:
                 errstr += "Please enter valid Firstname\t"
 
-            if(re.search("^[a-zA-Z]{2,20}$",txtlname)):
+            if (re.search("^[a-zA-Z]{2,20}$", txtlname)):
                 flaglname = 1
             else:
                 errstr += "Please enter valid Lastname\t"
 
-            if(re.search("^[0-9]{10}$",txtmobile)):
+            if (re.search("^[0-9]{10}$", txtmobile)):
                 flagmobile = 1
             else:
                 errstr += "Mobile number is not valid\t"
 
-            if(re.search("^[a-zA-Z,-/ ,0-9]+$",txtaddress)):
+            if (re.search("^[a-zA-Z,-/ ,0-9]+$", txtaddress)):
                 flagaddress = 1
             else:
                 errstr += "Address is invalid"
 
-            if(re.search("[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$",txtemail)):
+            if (re.search("[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$", txtemail)):
                 flagemail = 1
             else:
                 errstr += "Please enter valid email\t"
 
-            if(re.search("(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}",txtpass1)):
+            if (re.search("(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", txtpass1)):
                 flagpass1 = 1
-            else:   
+            else:
                 errstr += "Please enter a valid password\t"
 
-            if(flagfname == 1 and  flaglname == 1 and flagmobile == 1 and flagaddress == 1 and flagemail == 1 and flagpass1 == 1):
-                if(txtpass1 == txtpass2):
+            if (
+                    flagfname == 1 and flaglname == 1 and flagmobile == 1 and flagaddress == 1 and flagemail == 1 and flagpass1 == 1):
+                if (txtpass1 == txtpass2):
                     exists = Userx.objects.filter(Email=txtemail)
-                    if(len(exists) > 0):
+                    if (len(exists) > 0):
                         messages.warning(request, "The User already exists!")
                     else:
                         pass1 = hashlib.sha256(txtpass1.encode())
-                        newUser = Userx(FirstName = txtfname, LastName = txtlname, Email = txtemail, Password = pass1.hexdigest(), Mobile = txtmobile, Address1 = txtaddress)
+                        newUser = Userx(FirstName=txtfname, LastName=txtlname, Email=txtemail,
+                                        Password=pass1.hexdigest(), Mobile=txtmobile, Address1=txtaddress)
                         newUser.save()
                         messages.success(request, "The User registered successfully!")
                 else:
@@ -163,12 +173,25 @@ def registration(request):
                 messages.error(request, errstr)
         else:
             messages.error(request, "Invalid Request, Something went wrong!")
-    return render(request,"FarmersBuddy/Home/registration.html")
+    return render(request, "FarmersBuddy/Home/registration.html")
+
 
 # Admin Side
 @never_cache
 def admindashboard(request):
-    return render(request, "FarmersBuddy/Admin/dashboard.html")
+    obj = Userx.objects.filter(Type="c")
+    customers = len(obj)
+    obj = Order.objects.raw("select * from FarmersBuddy_Order where Status != '0' ")
+    orders = len(obj)
+    obj = Product.objects.filter(Status=1)
+    products = len(obj)
+    params = {
+        "customers": customers,
+        "orders": orders,
+        "products": products
+    }
+    return render(request, "FarmersBuddy/Admin/dashboard.html", params)
+
 
 @never_cache
 def customers(request):
@@ -177,14 +200,15 @@ def customers(request):
     dictusers = {
         "user": users
     }
-    return render(request,"FarmersBuddy/Admin/customers.html", dictusers)
+    return render(request, "FarmersBuddy/Admin/customers.html", dictusers)
+
 
 def changestatus(request):
     if request.method == "POST":
-        sid = request.POST.get("id","")
-        ustatus = request.POST.get("ustatus","")
-        if(id != "" and ustatus != ""):
-            if(ustatus == "0"):
+        sid = request.POST.get("id", "")
+        ustatus = request.POST.get("ustatus", "")
+        if (id != "" and ustatus != ""):
+            if (ustatus == "0"):
                 ustatus = 1
             else:
                 ustatus = 0
@@ -198,11 +222,12 @@ def changestatus(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def deletecustomer(request):
     if request.method == "POST":
-        cid = request.POST.get("id","")
+        cid = request.POST.get("id", "")
         print(cid)
-        if(cid != ""):
+        if (cid != ""):
             try:
                 obj = Userx.objects.get(id=cid)
                 obj.delete()
@@ -212,14 +237,15 @@ def deletecustomer(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 @never_cache
 def managebrands(request):
     if request.method == "POST":
-        txtbrand = request.POST.get("txtbrand","")
+        txtbrand = request.POST.get("txtbrand", "")
         txtbrand = txtbrand.strip()
-        if(txtbrand != ""):
+        if (txtbrand != ""):
             obj = Brand.objects.filter(BrandName=txtbrand)
-            if(len(obj) > 0):
+            if (len(obj) > 0):
                 messages.error(request, "Record already exists!")
             else:
                 try:
@@ -235,12 +261,13 @@ def managebrands(request):
     }
     return render(request, "FarmersBuddy/Admin/managebrands.html", dictbrands)
 
+
 def changebrandstatus(request):
     if request.method == "POST":
-        sid = request.POST.get("id","")
-        ustatus = request.POST.get("ustatus","")
-        if(id != "" and ustatus != ""):
-            if(ustatus == "0"):
+        sid = request.POST.get("id", "")
+        ustatus = request.POST.get("ustatus", "")
+        if (id != "" and ustatus != ""):
+            if (ustatus == "0"):
                 ustatus = 1
             else:
                 ustatus = 0
@@ -254,15 +281,16 @@ def changebrandstatus(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def updatebrand(request):
     if request.method == "POST":
-        bid = request.POST.get("id","")
-        ubrand = request.POST.get("ubrand","")
+        bid = request.POST.get("id", "")
+        ubrand = request.POST.get("ubrand", "")
         print(bid)
-        if(bid != "" and ubrand != ""):
+        if (bid != "" and ubrand != ""):
             try:
                 obj = Brand.objects.filter(BrandName=ubrand)
-                if(len(obj) > 0):
+                if (len(obj) > 0):
                     return HttpResponse("Brand already exists")
                 else:
                     obj = Brand.objects.get(id=bid)
@@ -274,11 +302,12 @@ def updatebrand(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def deletebrand(request):
     if request.method == "POST":
-        cid = request.POST.get("id","")
+        cid = request.POST.get("id", "")
         print(cid)
-        if(cid != ""):
+        if (cid != ""):
             try:
                 obj = Brand.objects.get(id=cid)
                 obj.delete()
@@ -288,14 +317,15 @@ def deletebrand(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 @never_cache
 def managecategories(request):
     if request.method == "POST":
-        txtcategory = request.POST.get("txtcategory","")
+        txtcategory = request.POST.get("txtcategory", "")
         txtcategory = txtcategory.strip()
-        if(txtcategory != ""):
+        if (txtcategory != ""):
             obj = Category.objects.filter(CategoryName=txtcategory)
-            if(len(obj) > 0):
+            if (len(obj) > 0):
                 messages.error(request, "Record already exists!")
             else:
                 try:
@@ -311,15 +341,16 @@ def managecategories(request):
     }
     return render(request, "FarmersBuddy/Admin/managecategories.html", dictbrands)
 
+
 def updatecategory(request):
     if request.method == "POST":
-        cid = request.POST.get("id","")
-        ucategory = request.POST.get("ucategory","")
+        cid = request.POST.get("id", "")
+        ucategory = request.POST.get("ucategory", "")
         print(cid)
-        if(cid != "" and ucategory != ""):
+        if (cid != "" and ucategory != ""):
             try:
                 obj = Category.objects.filter(CategoryName=ucategory)
-                if(len(obj) > 0):
+                if (len(obj) > 0):
                     return HttpResponse("Category already exists")
                 else:
                     obj = Category.objects.get(id=cid)
@@ -331,11 +362,12 @@ def updatecategory(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def deletecategory(request):
     if request.method == "POST":
-        cid = request.POST.get("id","")
+        cid = request.POST.get("id", "")
         print(cid)
-        if(cid != ""):
+        if (cid != ""):
             try:
                 obj = Category.objects.get(id=cid)
                 obj.delete()
@@ -345,12 +377,13 @@ def deletecategory(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def changecategorystatus(request):
     if request.method == "POST":
-        sid = request.POST.get("id","")
-        ustatus = request.POST.get("ustatus","")
-        if(id != "" and ustatus != ""):
-            if(ustatus == "0"):
+        sid = request.POST.get("id", "")
+        ustatus = request.POST.get("ustatus", "")
+        if (id != "" and ustatus != ""):
+            if (ustatus == "0"):
                 ustatus = 1
             else:
                 ustatus = 0
@@ -364,26 +397,28 @@ def changecategorystatus(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 @never_cache
 def addproduct(request):
     if request.method == "POST":
-        txtname = request.POST.get("txtname","")
-        txtdesc = request.POST.get("txtdesc","")
-        txtprice = request.POST.get("txtprice","")
-        txtqty = request.POST.get("txtqty","")
-        txtkeywords = request.POST.get("txtkeywords","")
-        selectbrand = request.POST.get("selectbrand","")
-        selectcategory = request.POST.get("selectcategory","")
-        imgproduct = request.FILES.get("imgproduct","")
-        if(valid_image_size(imgproduct)):
+        txtname = request.POST.get("txtname", "")
+        txtdesc = request.POST.get("txtdesc", "")
+        txtprice = request.POST.get("txtprice", "")
+        txtqty = request.POST.get("txtqty", "")
+        txtkeywords = request.POST.get("txtkeywords", "")
+        selectbrand = request.POST.get("selectbrand", "")
+        selectcategory = request.POST.get("selectcategory", "")
+        imgproduct = request.FILES.get("imgproduct", "")
+        if (valid_image_size(imgproduct)):
             obj = Product.objects.filter(Name=txtname, ProductBrand=selectbrand, ProductCat=selectcategory)
-            if(len(obj) > 0):
+            if (len(obj) > 0):
                 messages.error(request, "This product is already added!")
             else:
                 try:
                     category = Category.objects.get(id=selectcategory)
                     brand = Brand.objects.get(id=selectbrand)
-                    product = Product(Name=txtname, Desc=txtdesc, Image=imgproduct, Price=txtprice, Quantity=txtqty, Keywords=txtkeywords, ProductBrand=brand, ProductCat=category)
+                    product = Product(Name=txtname, Desc=txtdesc, Image=imgproduct, Price=txtprice, Quantity=txtqty,
+                                      Keywords=txtkeywords, ProductBrand=brand, ProductCat=category)
                     product.save()
                     messages.success(request, "Product added successfully!")
                 except:
@@ -398,6 +433,7 @@ def addproduct(request):
     }
     return render(request, "FarmersBuddy/Admin/addproduct.html", params)
 
+
 @never_cache
 def manageproducts(request):
     products = Product.objects.all()
@@ -405,6 +441,7 @@ def manageproducts(request):
         "products": products
     }
     return render(request, "FarmersBuddy/Admin/manageproducts.html", params)
+
 
 def changeproductstatus(request):
     if request.method == "POST":
@@ -425,6 +462,7 @@ def changeproductstatus(request):
     else:
         return HttpResponse("Invalid Request")
 
+
 def deleteproduct(request):
     if request.method == "POST":
         pid = request.POST.get("id", "")
@@ -437,6 +475,7 @@ def deleteproduct(request):
                 return HttpResponse("Invalid Request")
     else:
         return HttpResponse("Invalid Request")
+
 
 @never_cache
 def editproduct(request):
@@ -484,6 +523,7 @@ def editproduct(request):
             return redirect(manageproducts)
     return render(request, "FarmersBuddy/Admin/editproduct.html", params)
 
+
 @never_cache
 def products(request):
     products = Product.objects.filter(Status=1)
@@ -497,38 +537,41 @@ def products(request):
         "products": products
     }
     if request.method == "POST":
-        txtcart = request.POST.get("txtcart","")
-        txtcart = json.loads(txtcart)
+        txtcart = request.POST.get("txtcart", "")
         request.session["cart"] = txtcart
         return HttpResponse("done")
     return render(request, "FarmersBuddy/Home/products.html", params)
 
+
 @never_cache
 def viewproduct(request):
-    pid = request.GET.get("pid","")
+    pid = request.GET.get("pid", "")
     product = Product.objects.get(id=pid, Status=1)
     params = {
         "product": product
     }
     return render(request, "FarmersBuddy/Home/viewproduct.html", params)
 
+
 @never_cache
 def cart(request):
     if "cart" in request.session:
         cart = request.session["cart"]
+        cart = json.loads(cart)
         cartpid = []
         for key in cart.keys():
             cartpid.append(int(key))
         products = []
         for i in cartpid:
-            x = Product.objects.get(id = i)
+            x = Product.objects.get(id=i)
             products.append(x)
         print(products)
         params = {
-            "products" : products
+            "products": products
         }
-        return render(request, "FarmersBuddy/Home/cart.html",params)
+        return render(request, "FarmersBuddy/Home/cart.html", params)
     return render(request, "FarmersBuddy/Home/cart.html")
+
 
 @never_cache
 def checkout(request):
@@ -537,6 +580,7 @@ def checkout(request):
     if "cart" not in request.session:
         return redirect(products)
     cart = request.session["cart"]
+    cart = json.loads(cart)
     pro = []
     for key in cart.keys():
         obj = Product.objects.get(id=key)
@@ -552,7 +596,8 @@ def checkout(request):
         "products": pro,
         "total": total
     }
-    return render(request, "FarmersBuddy/Home/checkout.html",params)
+    return render(request, "FarmersBuddy/Home/checkout.html", params)
+
 
 @never_cache
 def confirmorder(request):
@@ -564,18 +609,28 @@ def confirmorder(request):
     if "total" not in request.session:
         return redirect(products)
 
+    # change address request
+    txtaddress = ""
+    if request.method == "POST":
+        txtaddress = request.POST.get("txtaddress", "")
+        if txtaddress != "":
+            pass
+        else:
+            messages.error(request, "Empty Address field!")
     # get objects and values
     user = Userx.objects.get(id=request.session['id'])
     total = request.session["total"]
     cart = request.session["cart"]
-    obj = Order.objects.filter(Status=0,User=user)
-
+    cart = json.loads(cart)
+    request.session["address"] = txtaddress
+    obj = Order.objects.filter(Status=0, User=user)
     # check if order cart already exists
-    if(len(obj)==0):
-        order = Order(User=user,Data=request.session["cart"],Total=total)
+    if (len(obj) == 0):
+        order = Order(User=user, Data=request.session["cart"], Total=total, Address=txtaddress)
         order.save()
     else:
-        order = Order.objects.get(User=user,Status=0)
+        order = Order.objects.get(User=user, Status=0)
+        order.Address = txtaddress
         order.Data = request.session["cart"]
         order.save()
 
@@ -590,19 +645,19 @@ def confirmorder(request):
     for item in pro:
         qty = item.Quantity
         x = cart[str(item.id)]
-        if(qty - x > 0):
+        if (qty - x > 0):
             pass
         else:
             available = False
             messages.error(request, "Not enough stock available!")
             break
-    if(available):
+    if (available):
         params = {
             "products": pro,
             "total": total,
-            "user" : user
+            "user": user
         }
-        return render(request, "FarmersBuddy/Home/confirmorder.html",params)
+        return render(request, "FarmersBuddy/Home/confirmorder.html", params)
     return redirect(products)
 
 
@@ -611,32 +666,42 @@ def success(request):
     if "id" in request.session:
         user = Userx.objects.get(id=request.session['id'])
         cart = request.session["cart"]
-        for key,value in cart.items():
+        cart = json.loads(cart)
+        for key, value in cart.items():
             pro = Product.objects.get(id=int(key))
             cartqty = value
             totalqty = pro.Quantity
             totalqty = totalqty - cartqty
             pro.Quantity = totalqty
             pro.save()
-        obj = Order.objects.get(User=user, Status = 0)
+        obj = Order.objects.get(User=user, Status=0)
+        # set default address
+        if (obj.Address == ""):
+            obj.Address = user.Address1
         obj.Status = 1
         obj.save()
-        del request.session["cart"]
+        if "cart" in request.session:
+            del request.session["cart"]
+        if "address" in request.session:
+            del request.session["address"]
         return render(request, "FarmersBuddy/Home/success.html")
     else:
         return redirect(products)
+
 
 @never_cache
 def about(request):
     return render(request, "FarmersBuddy/Home/about.html")
 
+
 @never_cache
 def contact(request):
     return render(request, "FarmersBuddy/Home/contact.html")
 
+
 @never_cache
 def manageorders(request):
-    orders = Order.objects.filter(Status=1 or 2)
+    orders = Order.objects.raw("select * from FarmersBuddy_Order where Status='1' or Status='2' ")
     params = {
         "orders": orders,
     }
@@ -647,17 +712,17 @@ def changepassword(request):
     if "id" not in request.session:
         return redirect(index)
     if request.method == "POST":
-        txtpass = request.POST.get("txtpass","")
+        txtpass = request.POST.get("txtpass", "")
         txtpass1 = request.POST.get("txtpass1", "")
         txtpass2 = request.POST.get("txtpass2", "")
         if txtpass != "" and txtpass1 != "" and txtpass2 != "":
-            if(txtpass1 == txtpass2):
+            if (txtpass1 == txtpass2):
                 txtpass = hashlib.sha256(txtpass.encode())
                 txtpass1 = hashlib.sha256(txtpass1.encode())
 
-                obj = Userx.objects.filter(id=request.session["id"], Password = txtpass.hexdigest())
+                obj = Userx.objects.filter(id=request.session["id"], Password=txtpass.hexdigest())
                 if len(obj) == 1:
-                    obj = Userx.objects.get (id=request.session["id"])
+                    obj = Userx.objects.get(id=request.session["id"])
                     obj.Password = txtpass1.hexdigest()
                     obj.save()
                     messages.success(request, "Your password changed successfully!")
@@ -669,6 +734,7 @@ def changepassword(request):
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/changepassword.html")
 
+
 @never_cache
 def editprofile(request):
     if "id" not in request.session:
@@ -678,7 +744,7 @@ def editprofile(request):
         txtlname = request.POST.get("txtlname", "")
         txtmobile = request.POST.get("txtmobile", "")
         txtaddress = request.POST.get("txtaddress", "")
-        if txtfname!= "" and txtlname != "" and txtmobile != "" and txtaddress != "":
+        if txtfname != "" and txtlname != "" and txtmobile != "" and txtaddress != "":
             obj = Userx.objects.get(id=request.session["id"])
             obj.FirstName = txtfname
             obj.LastName = txtlname
@@ -690,27 +756,29 @@ def editprofile(request):
             messages.error(request, "Empty Form!s")
     user = Userx.objects.get(id=request.session["id"])
     params = {
-        "user":user,
+        "user": user,
     }
     return render(request, "FarmersBuddy/Home/editprofile.html", params)
+
 
 @never_cache
 def forgotpassword(request):
     if request.method == "POST":
-        txtemail = request.POST.get("txtemail","")
-        if(txtemail != ""):
+        txtemail = request.POST.get("txtemail", "")
+        if (txtemail != ""):
             count = Userx.objects.filter(Email=txtemail)
             if len(count) == 1:
                 otp = random.randint(111111, 999999)
                 request.session['otp'] = otp
                 request.session["email"] = txtemail
-                sendemail(txtemail,"OTP for Forgot Password", "Your OTP for forgot password is: " + str(otp))
+                sendemail(txtemail, "OTP for Forgot Password", "Your OTP for forgot password is: " + str(otp))
                 return redirect(verifyotp)
             else:
                 messages.error(request, "Please enter registered email only!")
         else:
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/forgotpassword.html")
+
 
 @never_cache
 def verifyotp(request):
@@ -731,6 +799,7 @@ def verifyotp(request):
             messages.error(request, "Empty from!")
     return render(request, "FarmersBuddy/Home/verifyotp.html")
 
+
 @never_cache
 def newpassword(request):
     if "id" not in request.session:
@@ -739,9 +808,9 @@ def newpassword(request):
         txtpass1 = request.POST.get("txtpass1", "")
         txtpass2 = request.POST.get("txtpass2", "")
         if txtpass1 != "" and txtpass2 != "":
-            if(txtpass1 == txtpass2):
+            if (txtpass1 == txtpass2):
                 txtpass1 = hashlib.sha256(txtpass1.encode())
-                obj = Userx.objects.get (id=request.session["id"])
+                obj = Userx.objects.get(id=request.session["id"])
                 obj.Password = txtpass1.hexdigest()
                 obj.save()
                 del request.session['id']
@@ -755,36 +824,40 @@ def newpassword(request):
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/newpassword.html")
 
+
 @never_cache
 def vieworders(request):
     if "id" not in request.session:
         return redirect(index)
     user = Userx.objects.get(id=request.session["id"])
-    orders = Order.objects.filter(User=user,Status=1)
+    orders = Order.objects.filter((models.Q(Status=1) | models.Q(Status=2)) & models.Q(User=user))
+    print(orders)
     params = {
         "orders": orders
     }
-    return render(request, "FarmersBuddy/Home/vieworders.html",params)
+    return render(request, "FarmersBuddy/Home/vieworders.html", params)
+
 
 @never_cache
 def orderdetails(request):
     if "id" not in request.session:
         return redirect(index)
-    oid = request.GET.get("oid","")
+    oid = request.GET.get("oid", "")
     if oid != "":
         order = Order.objects.get(id=oid)
         data = json.loads(order.Data)
         products = []
-        for key,value in data.items():
+        for key, value in data.items():
             x = Product.objects.get(id=key)
             x.qty = value
             products.append(x)
         params = {
-            "products" : products,
+            "products": products,
             "order": order
         }
         return render(request, "FarmersBuddy/Home/orderdetails.html", params)
-    return  redirect(index)
+    return redirect(index)
+
 
 @never_cache
 def vieworderdetails(request):
@@ -802,3 +875,162 @@ def vieworderdetails(request):
             "order": order
         }
     return render(request, "FarmersBuddy/Admin/vieworderdetails.html", params)
+
+
+def changeorderstatus(request):
+    if request.method == "POST":
+        oid = request.POST.get("oid", "")
+        if (oid != ""):
+            try:
+                obj = Order.objects.get(id=oid)
+                obj.Status = 2
+                obj.save()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+
+@never_cache
+def customerreport(request):
+    customers = Userx.objects.filter(Type="c")
+    params = {
+        "customers": customers
+    }
+    return render(request, "FarmersBuddy/Admin/customerreport.html", params)
+
+
+@never_cache
+def productsreport(request):
+    products = Product.objects.all()
+    params = {
+        "products": products
+    }
+    return render(request, "FarmersBuddy/Admin/productsreport.html", params)
+
+
+@never_cache
+def salesreport(request):
+    orders = Order.objects.filter(models.Q(Status=1) | models.Q(Status=2))
+    products = []
+    for item in orders:
+        x = json.loads(item.Data)
+        for key, value in x.items():
+            p = Product.objects.get(id=int(key))
+            p.qty = value
+            p.sts = item.Status
+            products.append(p)
+    params = {
+        "products": products
+    }
+    return render(request, "FarmersBuddy/Admin/salesreport.html", params)
+
+
+@never_cache
+def invoice(request):
+    if "id" not in request.session:
+        return redirect(index)
+    iid = request.GET.get("iid", "")
+    if iid != "":
+        orders = Order.objects.get(id=iid)
+        products = []
+        x = json.loads(orders.Data)
+        for key, value in x.items():
+            p = Product.objects.get(id=int(key))
+            p.qty = value
+            products.append(p)
+        params = {
+            "orders": orders,
+            "products": products
+        }
+        return render(request, "FarmersBuddy/Home/invoice.html", params)
+    else:
+        return redirect(index)
+
+
+def manageblogs(request):
+    blogs = Blog.objects.all()
+    params = {
+        "blogs": blogs
+    }
+    return render(request, "FarmersBuddy/Admin/manageblogs.html", params)
+
+
+def changeblogstatus(request):
+    if request.method == "POST":
+        bid = request.POST.get("bid", "")
+        ustatus = request.POST.get("ustatus", "")
+        if (bid != "" and ustatus != ""):
+            if (ustatus == "0"):
+                ustatus = 1
+            else:
+                ustatus = 0
+            try:
+                obj = Blog.objects.get(id=bid)
+                obj.Status = ustatus
+                obj.save()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    return HttpResponse("Invalid Request1")
+
+
+def deleteblog(request):
+    if request.method == "POST":
+        bid = request.POST.get("bid","")
+        if(bid != ""):
+            try:
+                obj = Blog.objects.get(id=bid)
+                obj.delete()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")
+
+@never_cache
+def addblog(request):
+    if request.method == "POST":
+        txttitle = request.POST.get("txttitle","")
+        txtdesc = request.POST.get("txtdesc", "")
+        if(txttitle != "" and txtdesc != ""):
+            try:
+                obj = Blog(Title=txttitle, Desc= txtdesc)
+                obj.save()
+                messages.success(request, "Blog added successfully!")
+            except:
+                messages.error(request, "Something went wrong!")
+        else:
+            messages.error(request, "Empty form!")
+    return render(request, "FarmersBuddy/Admin/addblog.html")
+
+@never_cache
+def editblog(request):
+    bid = request.GET.get("bid","")
+    if request.method == "POST":
+        txttitle = request.POST.get("txttitle","")
+        txtdesc = request.POST.get("txtdesc", "")
+        if(bid != "" and txttitle != "" and txtdesc != ""):
+            try:
+                blog = Blog.objects.get(id=bid)
+                blog.Title = txttitle
+                blog.Desc = txtdesc
+                blog.save()
+                messages.success(request, "Blog updated successfully!")
+                return redirect(manageblogs)
+            except:
+                messages.error(request, "Something went wrong!")
+        else:
+            messages.error(request, "Empty form!")
+    if(bid != ""):
+        try:
+            blog = Blog.objects.get(id=bid)
+            params = {
+                "blog" : blog
+            }
+        except:
+            return redirect(manageblogs)
+        return render(request, "FarmersBuddy/Admin/editblog.html", params)
+    else:
+        return redirect(manageblogs)

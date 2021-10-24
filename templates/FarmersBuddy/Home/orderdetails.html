@@ -38,7 +38,7 @@
               <hr>
               <div class="row">
                   <div class="col"> <p class="h4">Total Amount: ₹ {{order.Total}}</p></div>
-                  <div class="col text-right"><a href="" class="btn btn-sm btn-dark">Download Invoice</a></div>
+                  <div class="col text-right"><a href="{% url 'invoice' %}?iid={{request.GET.oid}}" class="btn btn-sm btn-dark">View Invoice</a></div>
               </div>
         </div>
     </div>

@@ -58,4 +58,20 @@ urlpatterns = [
     path('vieworders', views.vieworders, name='vieworders'),
     path('orderdetails', views.orderdetails, name='orderdetails'),
     path('vieworderdetails', views.vieworderdetails, name='vieworderdetails'),
+    path('changeorderstatus', views.changeorderstatus, name='changeorderstatus'),
+
+    # Reports
+    path('customerreport', views.customerreport, name='customerreport'),
+    path('productsreport', views.productsreport, name='productsreport'),
+    path('salesreport', views.salesreport, name='salesreport'),
+
+    # Bill
+    path('invoice', views.invoice, name='invoice'),
+
+    # Blogs
+    path('manageblogs', views.manageblogs, name='manageblogs'),
+    path('changeblogstatus', views.changeblogstatus, name='changeblogstatus'),
+    path('deleteblog', views.deleteblog, name='deleteblog'),
+    path('addblog', views.addblog, name='addblog'),
+    path('editblog', views.editblog, name='editblog'),
 ]
