@@ -526,20 +526,36 @@ def editproduct(request):
 
 @never_cache
 def products(request):
-    products = Product.objects.filter(Status=1)
+    product = Product.objects.filter(Status=1)
     cats = set()
-    for pro in products:
+    for pro in product:
         x = pro.ProductCat.CategoryName
         cats.add(x)
-    print(products)
     params = {
         "categories": cats,
-        "products": products
+        "products": product
     }
     if request.method == "POST":
-        txtcart = request.POST.get("txtcart", "")
-        request.session["cart"] = txtcart
-        return HttpResponse("done")
+        txtsearch = request.POST.get("txtsearch", "")
+        if txtsearch != "":
+            items = Product.objects.filter(Keywords__contains=txtsearch)
+            if len(items) > 0:
+                cats = set()
+                for item in items:
+                    x = item.ProductCat.CategoryName
+                    cats.add(x)
+                params = {
+                    "categories": cats,
+                    "products": items
+                }
+                return render(request, "FarmersBuddy/Home/products.html", params)
+            else:
+                messages.info(request, "No product found!")
+                # return redirect(products)
+        else:
+            txtcart = request.POST.get("txtcart", "")
+            request.session["cart"] = txtcart
+            return HttpResponse("done")
     return render(request, "FarmersBuddy/Home/products.html", params)
 
 
@@ -556,20 +572,23 @@ def viewproduct(request):
 @never_cache
 def cart(request):
     if "cart" in request.session:
-        cart = request.session["cart"]
-        cart = json.loads(cart)
-        cartpid = []
-        for key in cart.keys():
-            cartpid.append(int(key))
-        products = []
-        for i in cartpid:
-            x = Product.objects.get(id=i)
-            products.append(x)
-        print(products)
-        params = {
-            "products": products
-        }
-        return render(request, "FarmersBuddy/Home/cart.html", params)
+        try:
+            cart = request.session["cart"]
+            cart = json.loads(cart)
+            cartpid = []
+            for key in cart.keys():
+                cartpid.append(int(key))
+            product = []
+            for i in cartpid:
+                x = Product.objects.get(id=i)
+                product.append(x)
+            print(products)
+            params = {
+                "products": product
+            }
+            return render(request, "FarmersBuddy/Home/cart.html", params)
+        except:
+            return redirect(products)
     return render(request, "FarmersBuddy/Home/cart.html")
 
 
@@ -1034,3 +1053,48 @@ def editblog(request):
         return render(request, "FarmersBuddy/Admin/editblog.html", params)
     else:
         return redirect(manageblogs)
+
+@never_cache
+def viewblogs(request):
+    blogs = Blog.objects.filter(Status=1)
+    params = {
+        "blogs": blogs
+    }
+    return render(request, "FarmersBuddy/Home/blogs.html", params)
+
+@never_cache
+def displayblog(request):
+    bid = request.GET.get("bid","")
+    if bid != "":
+        try:
+            blog = Blog.objects.get(id=bid)
+            params = {
+                "blog": blog
+            }
+            return render(request, "FarmersBuddy/Home/viewblog.html", params)
+        except:
+            return redirect(viewblogs)
+    else:
+        redirect(viewblogs)
+
+@never_cache
+def searchproducts(request):
+    if request.method == "POST":
+        txtsearch = request.POST.get("txtsearch","")
+        if txtsearch != "":
+            items = Product.objects.filter(Keywords__contains=txtsearch)
+            if len(items) > 0:
+                cats = set()
+                for item in items:
+                    x = item.ProductCat.CategoryName
+                    cats.add(x)
+                params = {
+                    "categories": cats,
+                    "products" : items
+                }
+                return render(request, "FarmersBuddy/Home/searchproducts.html", params)
+            else:
+                messages.info(request, "No product found!")
+                # return redirect(products)
+        else:
+            messages.error(request,"Invalid Request!")

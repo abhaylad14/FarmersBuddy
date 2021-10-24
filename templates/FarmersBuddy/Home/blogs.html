@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+{% block title %}Blogs{% endblock  %}
+{% block body %}
+<div class="container mb-4">
+    <p class="h2 text-center">Blogs</p>
+    <hr>
+    {% for item in blogs %}
+    <div class="card col-md-8 mb-3 mx-auto">
+        <div class="card-body col-md-10 mx-auto">
+            <p class="h4 text-dark" >{{item.Title}}</p>
+            <hr>
+            <p class="text-muted">{{item.Date}}</p>
+            <p>{{item.Desc | slice:':100'}}... 
+                <a style="color:#0d6efd" href="{% url 'displayblog' %}?bid={{item.id}}">read more</a>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock  %}

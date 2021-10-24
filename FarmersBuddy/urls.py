@@ -46,6 +46,7 @@ urlpatterns = [
     # User view products
     path('products', views.products, name='products'),
     path('viewproduct', views.viewproduct, name='viewproduct'),
+# path('admin/searchproducts', views.searchproducts, name='searchproducts'),
 
     # cart
     path('cart', views.cart, name='cart'),
@@ -74,4 +75,6 @@ urlpatterns = [
     path('deleteblog', views.deleteblog, name='deleteblog'),
     path('addblog', views.addblog, name='addblog'),
     path('editblog', views.editblog, name='editblog'),
+    path('viewblogs', views.viewblogs, name='viewblogs'),
+    path('displayblog', views.displayblog, name='displayblog'),
 ]

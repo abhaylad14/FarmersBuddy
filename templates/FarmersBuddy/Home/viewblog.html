@@ -1,0 +1,13 @@
+{% extends './base.html' %}
+{% block title %}Blogs{% endblock  %}
+{% block body %}
+<div class="container card my-4">
+    <div class="card-body">
+        <p class="h2 text-center">{{blog.Title}}</p>
+    <hr>
+    <div class="col-md-8 mx-auto">
+        <p>{{blog.Desc}}</p>
+    </div>
+    </div>
+</div>
+{% endblock  %}

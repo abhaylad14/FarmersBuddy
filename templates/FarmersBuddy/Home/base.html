@@ -56,7 +56,7 @@ Author URL: http://w3layouts.com
             </li>
           {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}"><i class="far fa-address-card"></i> About</a>
+              <a class="nav-link" href="{% url 'viewblogs' %}"><i class="far fa-address-card"></i> Blogs</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'products' %}"><i class="fas fa-cubes"></i> Products</a>
@@ -76,8 +76,9 @@ Author URL: http://w3layouts.com
   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     <a class="dropdown-item" href="{% url 'changepassword' %}"><i class="fas fa-unlock-alt"></i> Change Password</a>
     <a class="dropdown-item" href="{% url 'editprofile' %}"><i class="fas fa-user"></i> Edit Profile</a>
-    <a class="dropdown-item" href="{% url 'contact' %}"><i class="fas fa-id-badge"></i> Contact</a>
     <a class="dropdown-item" href="{% url 'vieworders' %}"><i class="fas fa-box"></i> View Orders</a>
+    <a class="dropdown-item" href="{% url 'contact' %}"><i class="fas fa-id-badge"></i> Contact</a>
+    <a class="dropdown-item" href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a>
   </div>
 </div>
 </li>
