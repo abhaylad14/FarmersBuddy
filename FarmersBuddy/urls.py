@@ -55,5 +55,7 @@ urlpatterns = [
 
     # orders
     path('manageorders', views.manageorders, name='manageorders'),
-
+    path('vieworders', views.vieworders, name='vieworders'),
+    path('orderdetails', views.orderdetails, name='orderdetails'),
+    path('vieworderdetails', views.vieworderdetails, name='vieworderdetails'),
 ]

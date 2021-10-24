@@ -1,5 +1,4 @@
-{% extends './base.html' %} {% block title %}Dashboard{% endblock %} 
-{% block body %}
+{% extends './base.html' %} {% block title %}Dashboard{% endblock %} {% block body %}
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
@@ -28,22 +27,46 @@
   <!-- Main content -->
   <div class="content">
     <div class="container-fluid"></div>
-    {% for i in orders %}
-    <div class="card">
-      <div class="card-body mx-auto col-md-6">
-          <p>OrderNo: &nbsp;&nbsp;&nbsp;&nbsp;{{forloop.counter}}</p>
-          <p>Customer Name: &nbsp;&nbsp;&nbsp;&nbsp;{{data.Order.UserId.FirstName}}</p>
-        {% for item in data %} 
-        {% if i == item.OrderId %}
-            <p>ProductName: &nbsp;&nbsp;&nbsp;&nbsp;{{item.ProductId}}</p>
-        {% endif %} 
-        {% endfor %}
-      </div>
-    </div>
-    {% endfor %}
     <!-- /.container-fluid -->
+    <div class="card">
+        <div class="card-body">
+          <table id="myTable" class="table table-hover table-responsive-md">
+            <thead class="table-secondary">
+              <th scope="col">#</th>
+              <th scope="col">Customer Name</th>
+              <th scope="col">Total Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">Action</th>
+            </thead>
+            <tbody>
+            {% for item in orders %}
+            <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ item.User.FirstName }} {{ item.User.LastName }}</td>
+            <td>₹ {{ item.Total }}</td>
+            {% if item.Status == "1"  %}
+            <td><span id="{{ item.id }}" class='badge bg-warning btn-status'>Order Placed</span></td>
+            {% elif item.Status == "2" %}
+            <td><span id="{{ item.id }}" class='badge bg-success btn-status'>Delivered</span></td>
+            {% endif %}
+            <td>
+              <a href="{% url 'vieworderdetails' %}?oid={{item.id}}" id="{{ item.id }}" class="btn btn-outline-primary btn-sm fas fa-eye border-0 btn-edit"> View Order</a>
+              <button id="{{ item.id }}" class="btn btn-outline-danger btn-sm border-0 btn-delete"><i class="fas fa-file-invoice-dollar"></i> View Invoice</button>
+              <button id="{{ item.id }}" class="btn btn-outline-secondary btn-sm border-0 btn-delete"><i class="fas fa-download"></i> Download Invoice</button>
+            </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
   </div>
   <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
+<script>
+   $(document).ready( function () {
+      $('#myTable').DataTable();
+  } );
+</script>
 {% endblock %}

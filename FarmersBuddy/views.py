@@ -556,39 +556,72 @@ def checkout(request):
 
 @never_cache
 def confirmorder(request):
+    # check sessions
     if "id" not in request.session:
         return redirect(login)
     if "cart" not in request.session:
         return redirect(products)
     if "total" not in request.session:
         return redirect(products)
+
+    # get objects and values
     user = Userx.objects.get(id=request.session['id'])
     total = request.session["total"]
     cart = request.session["cart"]
     obj = Order.objects.filter(Status=0,User=user)
+
+    # check if order cart already exists
     if(len(obj)==0):
-        order = Order(User=user,Data=cart,Total=total)
+        order = Order(User=user,Data=request.session["cart"],Total=total)
         order.save()
     else:
         order = Order.objects.get(User=user,Status=0)
-        order.Data = cart
+        order.Data = request.session["cart"]
         order.save()
+
+    # retrieve products
     pro = []
     for key in cart.keys():
         obj = Product.objects.get(id=key)
         pro.append(obj)
-    params = {
-        "products": pro,
-        "total": total,
-        "user" : user
-    }
-    return render(request, "FarmersBuddy/Home/confirmorder.html",params)
+
+    # check avalability
+    available = True
+    for item in pro:
+        qty = item.Quantity
+        x = cart[str(item.id)]
+        if(qty - x > 0):
+            pass
+        else:
+            available = False
+            messages.error(request, "Not enough stock available!")
+            break
+    if(available):
+        params = {
+            "products": pro,
+            "total": total,
+            "user" : user
+        }
+        return render(request, "FarmersBuddy/Home/confirmorder.html",params)
+    return redirect(products)
+
 
 @never_cache
 def success(request):
     if "id" in request.session:
         user = Userx.objects.get(id=request.session['id'])
-        total = request.session["total"]
+        cart = request.session["cart"]
+        for key,value in cart.items():
+            pro = Product.objects.get(id=int(key))
+            cartqty = value
+            totalqty = pro.Quantity
+            totalqty = totalqty - cartqty
+            pro.Quantity = totalqty
+            pro.save()
+        obj = Order.objects.get(User=user, Status = 0)
+        obj.Status = 1
+        obj.save()
+        del request.session["cart"]
         return render(request, "FarmersBuddy/Home/success.html")
     else:
         return redirect(products)
@@ -603,15 +636,9 @@ def contact(request):
 
 @never_cache
 def manageorders(request):
-    obj = Order.objects.all()
-    orders = set()
-    for i in obj:
-        x = i.OrderId
-        orders.add(x)
-    print(orders)
+    orders = Order.objects.filter(Status=1 or 2)
     params = {
         "orders": orders,
-        "data": obj
     }
     return render(request, "FarmersBuddy/Admin/manageorders.html", params)
 
@@ -667,7 +694,7 @@ def editprofile(request):
     }
     return render(request, "FarmersBuddy/Home/editprofile.html", params)
 
-
+@never_cache
 def forgotpassword(request):
     if request.method == "POST":
         txtemail = request.POST.get("txtemail","")
@@ -685,7 +712,7 @@ def forgotpassword(request):
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/forgotpassword.html")
 
-
+@never_cache
 def verifyotp(request):
     otp = request.session['otp']
     email = str(request.session['email'])
@@ -704,7 +731,7 @@ def verifyotp(request):
             messages.error(request, "Empty from!")
     return render(request, "FarmersBuddy/Home/verifyotp.html")
 
-
+@never_cache
 def newpassword(request):
     if "id" not in request.session:
         return redirect(index)
@@ -727,3 +754,51 @@ def newpassword(request):
         else:
             messages.error(request, "Empty form!")
     return render(request, "FarmersBuddy/Home/newpassword.html")
+
+@never_cache
+def vieworders(request):
+    if "id" not in request.session:
+        return redirect(index)
+    user = Userx.objects.get(id=request.session["id"])
+    orders = Order.objects.filter(User=user,Status=1)
+    params = {
+        "orders": orders
+    }
+    return render(request, "FarmersBuddy/Home/vieworders.html",params)
+
+@never_cache
+def orderdetails(request):
+    if "id" not in request.session:
+        return redirect(index)
+    oid = request.GET.get("oid","")
+    if oid != "":
+        order = Order.objects.get(id=oid)
+        data = json.loads(order.Data)
+        products = []
+        for key,value in data.items():
+            x = Product.objects.get(id=key)
+            x.qty = value
+            products.append(x)
+        params = {
+            "products" : products,
+            "order": order
+        }
+        return render(request, "FarmersBuddy/Home/orderdetails.html", params)
+    return  redirect(index)
+
+@never_cache
+def vieworderdetails(request):
+    oid = request.GET.get("oid", "")
+    if oid != "":
+        order = Order.objects.get(id=oid)
+        data = json.loads(order.Data)
+        products = []
+        for key, value in data.items():
+            x = Product.objects.get(id=key)
+            x.qty = value
+            products.append(x)
+        params = {
+            "products": products,
+            "order": order
+        }
+    return render(request, "FarmersBuddy/Admin/vieworderdetails.html", params)

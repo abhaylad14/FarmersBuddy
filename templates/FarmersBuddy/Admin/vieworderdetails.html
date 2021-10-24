@@ -1,0 +1,88 @@
+{% extends './base.html' %} {% block title %}Dashboard{% endblock %} 
+{% block body %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Order Details</h1>
+        </div>
+        <!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Order Details</li>
+          </ol>
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+    <hr/>
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+        <div class="card"> {% csrf_token %}
+        <div class="card-body">
+          <table id="myTable" class="table table-hover table-responsive-md">
+            <thead class="table-secondary">
+              <th scope="col">#</th>
+              <th scope="col">Image</th>
+              <th scope="col">Product Name</th>
+              <th scope="col">Brand</th>
+              <th scope="col">Category</th>
+              <th scope="col">Price</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Total Amount</th>
+            </thead>
+            <tbody>
+            {% for item in products %}
+            <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td><img src="{{ item.Image.url }}" height="100" width="100" alt="error in product image"></td>
+            <td>{{ item.Name }}</td>
+            <td>{{ item.ProductBrand }}</td>
+            <td>{{ item.ProductCat }}</td>
+            <td>{{ item.Price }}</td>
+            <td>{{ item.qty }}</td>
+            <td class="total"></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          <hr>
+          <div class="row">
+            <div class="col text-right">
+                <a class="btn btn-sm btn-primary"><i class="fas fa-file-invoice-dollar"></i> View Invoice</a>
+                <a class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> Download Invoice</a>
+            </div>
+              <div class="col-md-3 text-right">
+                  <p class="h4 mr-2">Total Amount: ₹ {{order.Total}}</p>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<script>
+    $(document).ready(function(){
+        let x = document.getElementsByClassName("total");
+        for(let i = 0; i < x.length; i++){
+            let price = parseInt(x[i].parentElement.children[5].innerHTML);
+            let qty = parseInt(x[i].parentElement.children[6].innerHTML);
+            let total = price * qty;
+            x[i].innerText= total;
+        }
+    });
+</script>
+{% endblock %}
