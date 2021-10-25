@@ -50,7 +50,7 @@
             <div class="card-footer">
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-sm btn-primary" href="{% url 'viewproduct' %}?pid={{item.id}}">View Product</a>
+                        {% comment %} <a class="btn btn-sm btn-primary" href="{% url 'viewproduct' %}?pid={{item.id}}">View Product</a> {% endcomment %}
                     </div>
                     <div class="col-md-2 text-right mr-2">
                           <button id="{{item.id}}" name="deleteproduct" class="btn btn-danger btn-sm btndelete"><i class="fas fa-trash-alt"></i></button>
