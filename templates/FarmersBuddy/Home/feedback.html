@@ -1,0 +1,23 @@
+{% extends './base.html' %}
+{% block title %}Feedback{% endblock  %}
+{% block body %}
+<div class="container mb-4">
+    <div class="card">
+        <div class="card-body col-md-6 mx-auto">
+            <form method="post">{% csrf_token %}
+                <div class="col">
+                    <label for="txttitle">Title</label>
+                    <input type="text" class="form-control" name="txttitle" maxlength="100" minlength="5" required placeholder="Enter title here">
+                </div>
+                <div class="col mt-2">
+                    <label for="txtdesc">Description</label>
+                    <textarea name="txtdesc" id="txtdesc" class="form-control" minlength="10" maxlength="500" required placeholder="Enter description here"></textarea>
+                </div> 
+                <div class="text-center">
+                    <button class="btn btn-primary mt-3" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock  %}

@@ -1098,3 +1098,48 @@ def searchproducts(request):
                 # return redirect(products)
         else:
             messages.error(request,"Invalid Request!")
+
+@never_cache
+def feedback(request):
+    if "id" not in request.session:
+        return redirect(login)
+    if request.method == "POST":
+        txttitle = request.POST.get("txttitle", "")
+        txtdesc = request.POST.get("txtdesc","")
+        if txttitle != "" and txtdesc != "":
+            user = Userx.objects.get(id=request.session["id"])
+            obj = Feedback.objects.filter(Title = txttitle, Desc= txtdesc, User=user)
+            if len(obj) == 0:
+                try:
+                    feedback = Feedback(Title = txttitle, Desc = txtdesc, User=user)
+                    feedback.save()
+                    messages.success(request, "Feedback submitted successfully!")
+                except:
+                    messages.error(request, "Something went wrong!")
+            else:
+                messages.error(request, "Feedback already submitted!")
+        else:
+            messages.error(request, "Empty Form!")
+    return render(request, "FarmersBuddy/Home/feedback.html")
+
+@never_cache
+def managefeedbacks(request):
+    feedbacks = Feedback.objects.all()
+    params = {
+        "feedbacks": feedbacks
+    }
+    return render(request, "FarmersBuddy/Admin/managefeedbacks.html", params)
+
+
+def deletefeedback(request):
+    if request.method == "POST":
+        fid = request.POST.get("fid", "")
+        if (fid != ""):
+            try:
+                obj = Feedback.objects.get(id=fid)
+                obj.delete()
+                return HttpResponse("done")
+            except:
+                return HttpResponse("Invalid Request")
+    else:
+        return HttpResponse("Invalid Request")

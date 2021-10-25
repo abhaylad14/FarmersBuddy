@@ -66,3 +66,10 @@ class Blog(models.Model):
     Desc = models.TextField()
     Date = models.DateField(auto_now_add=True)
     Status = models.CharField(max_length=1, default="1")
+
+class Feedback(models.Model):
+    id = models.AutoField(primary_key=True)
+    User = models.ForeignKey(Userx, on_delete=models.CASCADE)
+    Title = models.TextField(max_length=100)
+    Desc = models.TextField()
+    Date = models.DateField(auto_now_add=True)
