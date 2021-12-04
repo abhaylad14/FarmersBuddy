@@ -71,7 +71,8 @@ def logout(request):
     del request.session['id']
     if "admin" in request.session:
         del request.session['admin']
-    return redirect(index)
+    return HttpResponse("<script>localStorage.clear();window.location.replace('http://127.0.0.1:8000/FarmersBuddy/');</script>")
+    # return redirect(index)
 
 
 @never_cache
