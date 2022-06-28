@@ -24,8 +24,8 @@ def valid_image_size(image, max_size=MAX_SIZE):
 
 def sendemail(receiver, subject, msg):
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    sender = "ladaebs14@gmail.com"
-    server.login(sender, "Abhay@123")
+    sender = "<your email>"
+    server.login(sender, "<your password>")
     # message = "From: FarmersBuddy <{}> \n To: {} \n Subject: {} \n\n {} ".format(sender,receiver,subject,msg) 
     message = MIMEMultipart()
     message['From'] = "FarmersBuddy <" + sender + ">"
